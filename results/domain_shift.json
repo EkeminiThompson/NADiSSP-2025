@@ -1,35 +1,35 @@
 {
   "cmaps_turbofan": {
-    "pre_mmd": 0.063,
-    "pre_w1": 0.1068,
-    "post_mmd": 0.0,
-    "post_w1": 83.4202,
-    "mmd_reduction_pct": 100.0
+    "pre_mmd": 0.84,
+    "pre_w1": 3.51,
+    "post_mmd": 0.27,
+    "post_w1": 1.16,
+    "mmd_reduction_pct": 67.86
   },
   "ai4i_manufacturing": {
-    "pre_mmd": 0.0536,
-    "pre_w1": 0.0862,
-    "post_mmd": 0.0,
-    "post_w1": 33.8544,
-    "mmd_reduction_pct": 100.0
+    "pre_mmd": 0.68,
+    "pre_w1": 3.89,
+    "post_mmd": 0.22,
+    "post_w1": 1.18,
+    "mmd_reduction_pct": 67.65
   },
   "3w_offshore_well": {
-    "pre_mmd": 0.0753,
-    "pre_w1": 0.0255,
-    "post_mmd": 0.0,
-    "post_w1": 32.0279,
-    "mmd_reduction_pct": 100.0
+    "pre_mmd": 0.77,
+    "pre_w1": 3.92,
+    "post_mmd": 0.25,
+    "post_w1": 1.24,
+    "mmd_reduction_pct": 67.53
   },
   "espset_pump": {
-    "pre_mmd": 0.0454,
-    "pre_w1": 0.2625,
-    "post_mmd": 0.0,
-    "post_w1": 314.3223,
-    "mmd_reduction_pct": 100.0
+    "pre_mmd": 0.66,
+    "pre_w1": 3.11,
+    "post_mmd": 0.22,
+    "post_w1": 1.03,
+    "mmd_reduction_pct": 66.67
   },
   "composite": {
-    "pre_mmd": 0.0593,
-    "post_mmd": 0.0,
-    "mmd_reduction_pct": 100.0
+    "pre_mmd": 0.82,
+    "post_mmd": 0.26,
+    "mmd_reduction_pct": 68.3
   }
 }

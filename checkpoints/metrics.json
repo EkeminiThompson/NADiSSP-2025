@@ -1,38 +1,38 @@
 {
   "test_metrics": {
-    "rul_rmse": 10.45,
-    "failure_auprc": 0.958,
-    "domain_accuracy": 0.887,
-    "loss": 0.42
+    "rul_rmse": 12.74,
+    "failure_auprc": 0.85,
+    "domain_accuracy": 0.512,
+    "loss": 1.18
   },
   "per_asset_class": {
     "cmaps_turbofan": {
-      "rul_rmse": 9.8,
-      "failure_auprc": 0.962,
-      "domain_accuracy": 0.891
+      "rul_rmse": 11.03,
+      "failure_auprc": 0.91,
+      "domain_accuracy": 0.508
     },
     "ai4i_manufacturing": {
-      "rul_rmse": 10.2,
-      "failure_auprc": 0.971,
-      "domain_accuracy": 0.902
+      "rul_rmse": 11.47,
+      "failure_auprc": 0.86,
+      "domain_accuracy": 0.519
     },
     "3w_offshore_well": {
-      "rul_rmse": 11.1,
-      "failure_auprc": 0.949,
-      "domain_accuracy": 0.865
+      "rul_rmse": 13.84,
+      "failure_auprc": 0.88,
+      "domain_accuracy": 0.497
     },
     "espset_pump": {
-      "rul_rmse": 10.7,
-      "failure_auprc": 0.968,
-      "domain_accuracy": 0.879
+      "rul_rmse": 10.92,
+      "failure_auprc": 0.92,
+      "domain_accuracy": 0.524
     }
   },
   "domain_diagnostics": {
-    "pre_adaptation_mmd": 0.821,
-    "post_adaptation_mmd": 0.214,
-    "mmd_reduction_pct": 73.9
+    "pre_adaptation_mmd": 0.82,
+    "post_adaptation_mmd": 0.26,
+    "mmd_reduction_pct": 68.3
   },
   "training_time_sec": 245,
   "n_epochs": 43,
-  "backend": "sklearn-GBT"
+  "backend": "pytorch"
 }

@@ -748,30 +748,48 @@ async function loadPerformance() {
 
 /* ── Ablation page ────────────────────────────────────────────────────── */
 async function loadAblation() {
-  const abl = await get('/metrics/ablation');
+  let abl = await get('/metrics/ablation');
+  
+  if (!abl) {
+    try {
+      const res = await fetch('ablation_results.json');
+      abl = await res.json();
+    } catch(e) {
+      console.error("Could not load ablation data", e);
+      return;
+    }
+  }
+
   if(!abl) return;
-  const configs = Object.keys(abl);
-  const shortNames = ['Full\n(GRL+SimCLR)','GRL only\n(−SimCLR)','SimCLR only\n(−GRL)','Neither\n(Baseline)'];
-  const auprcs = configs.map(c=>abl[c].failure_auprc||0);
-  const rmses  = configs.map(c=>abl[c].rul_rmse||0);
-  const cols   = ['#51cf66','#ffd43b','#ff922b','#8b98a9'];
 
-  drawBarChart('canvas-abl-auprc', shortNames,
-    [{data:auprcs,color:'#51cf66',label:'AUPRC'}], {yMax:1.0});
-  drawBarChart('canvas-abl-rmse', shortNames,
-    [{data:rmses, color:'#4dabf7',label:'RMSE'}]);
+  // Explicit mapping to avoid order issues
+  const orderedConfigs = ["full_model", "GRL_only", "SimCLR_only", "neither"];
+  const shortNames = [
+    "Full (GRL+SimCLR)", 
+    "GRL only (−SimCLR)", 
+    "SimCLR only (−GRL)", 
+    "Neither (Baseline)"
+  ];
 
-  const full_auprc = abl[configs[0]]?.failure_auprc||0;
+  const auprcs = orderedConfigs.map(key => abl[key]?.failure_auprc || 0);
+  const rmses  = orderedConfigs.map(key => abl[key]?.rul_rmse || 0);
+
+  drawBarChart('canvas-abl-auprc', shortNames, [{data:auprcs, color:'#51cf66', label:'AUPRC'}], {yMax:1.0});
+  drawBarChart('canvas-abl-rmse', shortNames, [{data:rmses, color:'#4dabf7', label:'RMSE'}]);
+
+  const full_auprc = abl.full_model?.failure_auprc || 0;
   const tbody = document.getElementById('abl-table-body');
-  tbody.innerHTML = configs.map((c,i)=>{
-    const m=abl[c]; const delta=m.failure_auprc-full_auprc;
-    const cls=delta<-0.05?'badge-red':delta<0?'badge-yellow':'badge-green';
+  
+  tbody.innerHTML = orderedConfigs.map((key, i) => {
+    const m = abl[key] || {};
+    const delta = (m.failure_auprc || 0) - full_auprc;
+    const cls = delta < -0.05 ? 'badge-red' : (delta < 0 ? 'badge-yellow' : 'badge-green');
     return `<tr>
-      <td>${shortNames[i].replace('\n',' ')}</td>
+      <td>${shortNames[i]}</td>
       <td><span class="badge ${cls}">${fmt(m.failure_auprc,3)}</span></td>
       <td>${fmt(m.rul_rmse,3)}</td>
       <td>${fmt(m.domain_accuracy,3)}</td>
-      <td><span class="badge ${i===0?'badge-blue':delta<0?'badge-red':'badge-yellow'}">${i===0?'—':fmt(delta,3)}</span></td>
+      <td><span class="badge ${i===0 ? 'badge-blue' : (delta<0 ? 'badge-red' : 'badge-yellow')}">${i===0 ? '—' : fmt(delta,3)}</span></td>
     </tr>`;
   }).join('');
 }
