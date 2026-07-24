@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NADiSSP — Research Dashboard</title>
+<style>
+:root {
+  --bg:#0f1419; --panel:#1a2230; --border:#2a3548; --text:#e6edf3;
+  --muted:#8b98a9; --accent:#4dabf7; --green:#51cf66; --yellow:#ffd43b;
+  --orange:#ff922b; --red:#ff6b6b; --purple:#cc5de8; --teal:#20c997;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+  background:var(--bg);color:var(--text);min-height:100vh}
+/* Layout */
+.layout{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
+nav{background:var(--panel);border-right:1px solid var(--border);
+  padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
+nav h1{font-size:13px;font-weight:700;color:var(--accent);padding:0 16px 16px;
+  letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border)}
+nav .section{padding:8px 16px 4px;font-size:10px;color:var(--muted);
+  text-transform:uppercase;letter-spacing:.1em;margin-top:8px}
+nav a{display:block;padding:7px 16px;font-size:13px;color:var(--muted);
+  text-decoration:none;border-left:2px solid transparent;transition:all .15s}
+nav a:hover,nav a.active{color:var(--text);border-left-color:var(--accent);
+  background:rgba(77,171,247,.07)}
+main{padding:24px;overflow-y:auto}
+/* Panels */
+.page{display:none}.page.active{display:block}
+.page-title{font-size:20px;font-weight:700;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.grid{display:grid;gap:14px}
+.g2{grid-template-columns:repeat(2,1fr)}
+.g3{grid-template-columns:repeat(3,1fr)}
+.g4{grid-template-columns:repeat(4,1fr)}
+.panel{background:var(--panel);border:1px solid var(--border);
+  border-radius:10px;padding:16px}
+.panel-title{font-size:11px;text-transform:uppercase;letter-spacing:.06em;
+  color:var(--muted);font-weight:600;margin-bottom:12px}
+/* KPI cards */
+.kpi{text-align:center}
+.kpi-val{font-size:28px;font-weight:700;font-family:ui-monospace,monospace;
+  line-height:1.1}
+.kpi-label{font-size:11px;color:var(--muted);margin-top:4px}
+.kpi-sub{font-size:10px;color:var(--muted);margin-top:2px}
+.green{color:var(--green)}.yellow{color:var(--yellow)}.red{color:var(--red)}
+.accent{color:var(--accent)}.purple{color:var(--purple)}.teal{color:var(--teal)}
+/* Tables */
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:7px 10px;text-align:left;color:var(--muted);font-weight:600;
+  font-size:10px;text-transform:uppercase;border-bottom:1px solid var(--border)}
+td{padding:7px 10px;border-bottom:1px solid rgba(42,53,72,.5)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:rgba(77,171,247,.04)}
+/* Badges */
+.badge{display:inline-block;padding:2px 8px;border-radius:5px;
+  font-size:10px;font-weight:700;text-transform:uppercase}
+.badge-green{background:rgba(81,207,102,.15);color:var(--green)}
+.badge-yellow{background:rgba(255,212,59,.15);color:var(--yellow)}
+.badge-red{background:rgba(255,107,107,.15);color:var(--red)}
+.badge-blue{background:rgba(77,171,247,.15);color:var(--accent)}
+.badge-grey{background:rgba(139,152,169,.15);color:var(--muted)}
+/* Charts */
+.chart-wrap{position:relative;width:100%}
+canvas{width:100%!important}
+/* Figures */
+.fig-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}
+.fig-card{background:var(--panel);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.fig-card img{width:100%;display:block;background:#111}
+.fig-card .fig-label{padding:8px 12px;font-size:11px;color:var(--muted)}
+/* Forms */
+input,select,textarea{background:#0d1521;border:1px solid var(--border);
+  border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;width:100%}
+/* Buttons */
+.btn{background:var(--accent);color:#06121f;border:none;border-radius:6px;
+  padding:8px 16px;font-size:13px;font-weight:600;cursor:pointer;
+  display:inline-flex;align-items:center;gap:6px;transition:opacity .15s}
+.btn:hover{opacity:.85}.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn-sec{background:transparent;border:1px solid var(--border);color:var(--text)}
+.btn-green{background:var(--green);color:#0a1f0d}
+.btn-orange{background:var(--orange);color:#1a0800}
+/* Progress bar */
+.bar-wrap{background:rgba(255,255,255,.06);border-radius:4px;height:6px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width .4s}
+/* Status dot */
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:5px}
+.dot-green{background:var(--green)}.dot-yellow{background:var(--yellow)}
+.dot-red{background:var(--red)}.dot-grey{background:var(--muted)}
+/* Code */
+pre{background:#0d1521;border:1px solid var(--border);border-radius:6px;
+  padding:12px;font-size:11px;overflow-x:auto;color:#a8b5c8;line-height:1.5}
+/* Alerts */
+.alert{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:12px;
+  border-left:3px solid}
+.alert-info{background:rgba(77,171,247,.08);border-color:var(--accent);color:var(--accent)}
+.alert-warn{background:rgba(255,212,59,.08);border-color:var(--yellow);color:var(--yellow)}
+/* Responsive */
+@media(max-width:768px){.layout{grid-template-columns:1fr}
+  nav{height:auto;position:relative}.g2,.g3,.g4{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="layout">
+<!-- SIDEBAR -->
+<nav>
+  <h1>NADiSSP</h1>
+  <div class="section">Overview</div>
+  <a href="#" class="active" data-page="overview">📊 Dashboard</a>
+  <a href="#" data-page="model">🧠 Model Status</a>
+  <div class="section">Chapter 4</div>
+  <a href="#" data-page="simclr">🔁 SimCLR Pre-Train</a>
+  <a href="#" data-page="domain">📐 Domain Shift</a>
+  <a href="#" data-page="performance">🎯 Performance</a>
+  <a href="#" data-page="ablation">🔬 Ablation Study</a>
+  <a href="#" data-page="figures">📈 Figures</a>
+  <a href="#" data-page="tco">💰 TCO / NPV</a>
+  <a href="#" data-page="network">🌐 Network Test</a>
+  <div class="section">Inference</div>
+  <a href="#" data-page="predict">⚡ Live Predict</a>
+  <div class="section">Tools</div>
+  <a href="#" data-page="run">▶ Run Scripts</a>
+  <a href="/docs" target="_blank">📖 API Docs</a>
+</nav>
+
+<!-- MAIN -->
+<main>
+
+<!-- OVERVIEW -->
+<div class="page active" id="page-overview">
+  <div class="page-title">NADiSSP Research Dashboard</div>
+  <div class="page-sub">Nigerian-Adapted Domain-Invariant Self-Supervised Prognostics · Chapter 4 Results</div>
+  <div class="grid g4" id="kpi-row" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val green" id="kpi-auprc">—</div><div class="kpi-label">AUPRC (test set)</div><div class="kpi-sub">Target: 0.85</div></div>
+    <div class="panel kpi"><div class="kpi-val accent" id="kpi-rmse">—</div><div class="kpi-label">RUL RMSE (cycles)</div><div class="kpi-sub">Target: ≤13.5</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="kpi-mmd">—</div><div class="kpi-label">Post-adapt MMD</div><div class="kpi-sub">Pre-adapt: ~0.82</div></div>
+    <div class="panel kpi"><div class="kpi-val purple" id="kpi-npv">—</div><div class="kpi-label">5-yr NPV ($M)</div><div class="kpi-sub">Target: $892M</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">System Status</div>
+      <table id="status-table">
+        <tr><td>Model loaded</td><td id="st-model">—</td></tr>
+        <tr><td>Training metrics</td><td id="st-metrics">—</td></tr>
+        <tr><td>Figures generated</td><td id="st-figs">—</td></tr>
+        <tr><td>TCO simulation</td><td id="st-tco">—</td></tr>
+        <tr><td>Network test</td><td id="st-net">—</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Per-Asset-Class Summary</div>
+      <table id="per-asset-table">
+        <thead><tr><th>Asset Class</th><th>AUPRC</th><th>RMSE</th></tr></thead>
+        <tbody id="per-asset-body"><tr><td colspan="3" style="color:var(--muted)">Loading…</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<!-- MODEL STATUS -->
+<div class="page" id="page-model">
+  <div class="page-title">Model Architecture & Training</div>
+  <div class="page-sub">NADiSSP composite loss · L_total = L_task + λ_d·L_domain + λ_c·L_contrastive + L_survival</div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Architecture Summary</div>
+      <table>
+        <tr><td>Encoder</td><td>1D-CNN + Bidirectional GRU</td></tr>
+        <tr><td>Repr. dim</td><td>32</td></tr>
+        <tr><td>Task head</td><td>RUL regression + failure classification</td></tr>
+        <tr><td>Domain head</td><td>GRL adversarial classifier</td></tr>
+        <tr><td>Contrastive</td><td>SimCLR NT-Xent projection</td></tr>
+        <tr><td>Survival</td><td>Weibull proportional hazards</td></tr>
+        <tr><td>Input channels</td><td id="arch-channels">—</td></tr>
+        <tr><td>Sequence length</td><td>50 timesteps</td></tr>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Training Configuration</div>
+      <table>
+        <tr><td>Epochs</td><td>43</td></tr>
+        <tr><td>Batch size</td><td>64</td></tr>
+        <tr><td>Learning rate</td><td>8×10⁻⁴ (cosine decay)</td></tr>
+        <tr><td>λ_d schedule</td><td>Cosine ramp 0→1</td></tr>
+        <tr><td>λ_c (SimCLR)</td><td>0.3</td></tr>
+        <tr><td>λ_d (GRL)</td><td>0.5</td></tr>
+        <tr><td>Training time</td><td id="arch-time">—</td></tr>
+        <tr><td>Device</td><td id="arch-device">—</td></tr>
+      </table>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">Training History</div>
+    <canvas id="canvas-train" height="220"></canvas>
+  </div>
+</div>
+
+<!-- SIMCLR PRE-TRAINING — CONTRIBUTION 2 -->
+<div class="page" id="page-simclr">
+  <div class="page-title">SimCLR Self-Supervised Pre-Training — Contribution 2</div>
+  <div class="page-sub">Stage 2 · NT-Xent contrastive loss on unlabelled Nigerian-augmented sequences · τ=0.5 · Section 3.10.2 Component 3</div>
+  <div class="alert alert-info">
+    <strong>What this solves:</strong> "acute annotation scarcity in which over 80% of sensor data remains unlabelled."
+    SimCLR learns degradation-robust representations from unlabelled target sequences by maximising agreement between
+    augmented views — no RUL labels required. Pre-trained weights warm-start Stage 3 (train.py).
+  </div>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-green" onclick="runSimCLR()">▶ Run SimCLR Pre-Training (100 epochs)</button>
+    <span id="simclr-run-status" style="font-size:12px;color:var(--muted);margin-left:10px"></span>
+  </div>
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val accent" id="sc-init">—</div><div class="kpi-label">Initial NT-Xent</div><div class="kpi-sub">Paper target: 0.841</div></div>
+    <div class="panel kpi"><div class="kpi-val green" id="sc-final">—</div><div class="kpi-label">Final NT-Xent</div><div class="kpi-sub">Paper target: 0.083</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="sc-reduc">—</div><div class="kpi-label">Loss Reduction</div><div class="kpi-sub">Paper: 90.1%</div></div>
+    <div class="panel kpi"><div class="kpi-val purple" id="sc-epochs">—</div><div class="kpi-label">Epochs Run</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">NT-Xent Loss Curve (Figure 4.3 left panel)</div>
+      <canvas id="canvas-ntxent" height="200"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Positive-Pair View Similarity</div>
+      <canvas id="canvas-viewsim" height="200"></canvas>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">Implementation Notes — Section 3.10.2 Component 3</div>
+    <table>
+      <tr><td>Dissertation equation</td><td>L = −(1/N) Σ_i log [exp(sim(h_i¹,h_i²)/τ) / Σ_{k≠i} exp(sim(h_i¹,h_k)/τ)]</td></tr>
+      <tr><td>Temperature τ</td><td>0.5 (paper specification)</td></tr>
+      <tr><td>Similarity metric</td><td>Cosine similarity</td></tr>
+      <tr><td>Projection head</td><td>2-layer MLP: REPR_DIM(32) → 128 → 64</td></tr>
+      <tr><td>Augmentation views</td><td>Feature-space jitter (σ=0.08) + dropout (15%) + channel scaling (±15%)</td></tr>
+      <tr><td>Data used</td><td>Unlabelled target-domain sequences only (domain_label=1)</td></tr>
+      <tr><td>Backend note</td><td>sklearn approximation of NT-Xent gradient (mean-teacher proxy). Full autograd version requires PyTorch — see models/nadissp_torch.py</td></tr>
+      <tr><td>Stage handoff</td><td>Encoder weights automatically loaded by train.py (Stage 3) if checkpoint exists</td></tr>
+    </table>
+  </div>
+</div>
+
+<!-- DOMAIN SHIFT -->
+<div class="page" id="page-domain">
+  <div class="page-title">Domain Shift Diagnostics</div>
+  <div class="page-sub">Table 4.1/4.2 · Pre vs post-adaptation MMD and Wasserstein-1 by asset class</div>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val red" id="d-premmd">—</div><div class="kpi-label">Pre-adapt MMD</div><div class="kpi-sub">Composite</div></div>
+    <div class="panel kpi"><div class="kpi-val green" id="d-postmmd">—</div><div class="kpi-label">Post-adapt MMD</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="d-redpct">—</div><div class="kpi-label">MMD Reduction %</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-title">Per-Asset-Class Domain Diagnostics</div>
+    <table>
+      <thead><tr><th>Asset Class</th><th>Pre-MMD</th><th>Pre-W1</th><th>Post-MMD</th><th>Post-W1</th><th>Reduction</th></tr></thead>
+      <tbody id="domain-table-body"><tr><td colspan="6" style="color:var(--muted)">Run evaluate.py to generate</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- PERFORMANCE -->
+<div class="page" id="page-performance">
+  <div class="page-title">Model Performance (Chapter 4.3–4.4)</div>
+  <div class="page-sub">Table 4.3 / 4.6 / 4.7 · AUPRC, RUL RMSE, Domain Accuracy</div>
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val green" id="perf-auprc">—</div><div class="kpi-label">AUPRC</div></div>
+    <div class="panel kpi"><div class="kpi-val accent" id="perf-rmse">—</div><div class="kpi-label">RUL RMSE</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="perf-doma">—</div><div class="kpi-label">Domain Acc.</div></div>
+    <div class="panel kpi"><div class="kpi-val purple" id="perf-loss">—</div><div class="kpi-label">Test Loss</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Per-Asset AUPRC (Table 4.6)</div>
+      <canvas id="canvas-auprc" height="180"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Per-Asset RUL RMSE (Table 4.7)</div>
+      <canvas id="canvas-rmse" height="180"></canvas>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">SHAP / Gradient Attribution (Table 4.8)</div>
+    <canvas id="canvas-shap" height="200"></canvas>
+  </div>
+</div>
+
+<!-- ABLATION -->
+<div class="page" id="page-ablation">
+  <div class="page-title">Ablation Study (Section 4.6.1)</div>
+  <div class="page-sub">Component dependency ordering · Contribution 3 · GRL → SimCLR interaction</div>
+  <div class="alert alert-info">Claim: SimCLR provides greatest marginal benefit only when GRL is already active. Full model AUPRC − (GRL only) &gt; (SimCLR only) − Neither.</div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">AUPRC by Configuration</div>
+      <canvas id="canvas-abl-auprc" height="220"></canvas>
+    </div>
+    <div class="panel">
+      <div class="panel-title">RUL RMSE by Configuration</div>
+      <canvas id="canvas-abl-rmse" height="220"></canvas>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">Ablation Results Table</div>
+    <table>
+      <thead><tr><th>Configuration</th><th>AUPRC</th><th>RUL RMSE</th><th>Domain Acc.</th><th>AUPRC Δ vs Full</th></tr></thead>
+      <tbody id="abl-table-body"><tr><td colspan="5" style="color:var(--muted)">Loading…</td></tr></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- FIGURES -->
+<div class="page" id="page-figures">
+  <div class="page-title">Generated Figures (Chapter 4)</div>
+  <div class="page-sub">Figures 4.1–4.6 · Run evaluate.py to regenerate</div>
+  <div style="margin-bottom:14px">
+    <button class="btn btn-sec" onclick="refreshFigures()">↻ Refresh</button>
+    <button class="btn btn-sec" onclick="triggerEval()">▶ Run evaluate.py</button>
+    <span id="eval-status" style="font-size:12px;color:var(--muted);margin-left:10px"></span>
+  </div>
+  <div class="fig-grid" id="fig-grid">
+    <div style="color:var(--muted);font-size:13px">Loading figures…</div>
+  </div>
+</div>
+
+<!-- TCO / NPV -->
+<div class="page" id="page-tco">
+  <div class="page-title">TCO / NPV Monte Carlo (Contribution 4)</div>
+  <div class="page-sub">Table 4.9 · Nigerian-parameterised economic simulation · 10,000 trials · 5-year horizon</div>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-green" onclick="runTco()">▶ Run TCO Simulation</button>
+    <span id="tco-run-status" style="font-size:12px;color:var(--muted);margin-left:10px"></span>
+  </div>
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val green" id="tco-npv">—</div><div class="kpi-label">5-yr NPV (mean $M)</div><div class="kpi-sub">Target: $892.4M</div></div>
+    <div class="panel kpi"><div class="kpi-val accent" id="tco-saving">—</div><div class="kpi-label">Annual Saving ($M)</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="tco-pct">—</div><div class="kpi-label">TCO Reduction %</div></div>
+    <div class="panel kpi"><div class="kpi-val purple" id="tco-prob">—</div><div class="kpi-label">P(NPV &gt; 0)</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Table 4.9 — Core Results (per refinery)</div>
+      <table id="tco-core-table">
+        <tbody>
+          <tr><td>Reactive annual TCO (mean ± SD)</td><td id="tco-react">—</td></tr>
+          <tr><td>NADiSSP annual TCO (mean ± SD)</td><td id="tco-nad">—</td></tr>
+          <tr><td>Annual saving</td><td id="tco-delta">—</td></tr>
+          <tr><td>5-yr NPV (mean ± SD)</td><td id="tco-npv2">—</td></tr>
+          <tr><td>±35% uncertainty band</td><td id="tco-ci">—</td></tr>
+          <tr><td>Median payback year</td><td id="tco-payback">—</td></tr>
+          <tr><td>Median IRR</td><td id="tco-irr">—</td></tr>
+          <tr><td>National scale (5 refineries)</td><td id="tco-national">—</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Asset-Class Contribution (annual saving $M)</div>
+      <canvas id="canvas-tco-ac" height="200"></canvas>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">Sensitivity Analysis (Sobol Indices)</div>
+    <canvas id="canvas-sobol" height="180"></canvas>
+  </div>
+</div>
+
+<!-- NETWORK TEST -->
+<div class="page" id="page-network">
+  <div class="page-title">Network Resilience Testing (Section 4.5 / Contribution 5)</div>
+  <div class="page-sub">Table 4.10 / 4.11 · Inference latency + packet-loss degradation</div>
+  <div class="alert alert-warn" id="net-method-banner">Run network test to see methodology note.</div>
+  <div style="margin-bottom:12px">
+    <button class="btn btn-orange" onclick="runNetTest()">▶ Run Network Test</button>
+    <span id="net-run-status" style="font-size:12px;color:var(--muted);margin-left:10px"></span>
+  </div>
+  <div class="grid g3" style="margin-bottom:14px">
+    <div class="panel kpi"><div class="kpi-val green" id="net-p50">—</div><div class="kpi-label">P50 Latency (ms)</div></div>
+    <div class="panel kpi"><div class="kpi-val yellow" id="net-p95">—</div><div class="kpi-label">P95 Latency (ms)</div></div>
+    <div class="panel kpi"><div class="kpi-val accent" id="net-tmet">—</div><div class="kpi-label">Within 120ms (%)</div></div>
+  </div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Table 4.10 — Latency (all hardware)</div>
+      <table>
+        <thead><tr><th>Hardware</th><th>Mean (ms)</th><th>P95 (ms)</th><th>Target Met</th><th>Source</th></tr></thead>
+        <tbody id="lat-table"><tr><td colspan="5" style="color:var(--muted)">Not yet measured</td></tr></tbody>
+      </table>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Table 4.11 — Packet Loss Degradation</div>
+      <table>
+        <thead><tr><th>Loss %</th><th>AUPRC</th><th>AUPRC Drop</th><th>Mode</th></tr></thead>
+        <tbody id="pkt-table"><tr><td colspan="4" style="color:var(--muted)">Not yet measured</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">AUPRC Degradation Under Packet Loss</div>
+    <canvas id="canvas-pktloss" height="200"></canvas>
+  </div>
+</div>
+
+<!-- PREDICT -->
+<div class="page" id="page-predict">
+  <div class="page-title">Live Inference</div>
+  <div class="page-sub">POST /predict · Real-time RUL + failure probability from sensor sequence</div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Asset Configuration</div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;color:var(--muted)">Asset ID</label>
+        <input id="pred-id" value="UNIT_001" style="margin-top:4px">
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;color:var(--muted)">Asset Class</label>
+        <select id="pred-class" style="margin-top:4px">
+          <option value="espset_pump">ESPset — Electric Submersible Pump</option>
+          <option value="cmaps_turbofan">CMAPSS — Gas Turbine</option>
+          <option value="3w_offshore_well">3W — Offshore Well</option>
+          <option value="ai4i_manufacturing">AI4I — Manufacturing</option>
+        </select>
+      </div>
+      <div style="margin-bottom:10px">
+        <label style="font-size:12px;color:var(--muted)">Simulated Degradation Level</label>
+        <input type="range" id="pred-degrad" min="0" max="100" value="40"
+          oninput="document.getElementById('degrad-val').textContent=this.value+'%'"
+          style="width:100%;margin-top:6px;accent-color:var(--accent)">
+        <span id="degrad-val" style="font-size:12px;color:var(--muted)">40%</span>
+      </div>
+      <button class="btn" onclick="runPredict()" id="pred-btn">⚡ Run Inference</button>
+    </div>
+    <div class="panel" id="pred-result">
+      <div class="panel-title">Result</div>
+      <div style="color:var(--muted);font-size:13px">Click Run Inference to see results.</div>
+    </div>
+  </div>
+  <div class="panel" style="margin-top:14px">
+    <div class="panel-title">Latency Monitor (rolling 50 calls)</div>
+    <canvas id="canvas-lat" height="120"></canvas>
+  </div>
+</div>
+
+<!-- RUN SCRIPTS -->
+<div class="page" id="page-run">
+  <div class="page-title">Run Scripts</div>
+  <div class="page-sub">Trigger training, evaluation, and simulation pipeline components</div>
+  <div class="grid g2">
+    <div class="panel">
+      <div class="panel-title">Pipeline Steps</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">1. Generate Datasets</div><div style="font-size:11px;color:var(--muted)">data/generate_datasets.py</div></div>
+          <button class="btn btn-sec" onclick="runScript('generate')">▶ Run</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">2. Train NADiSSP</div><div style="font-size:11px;color:var(--muted)">scripts/train.py · 43 epochs</div></div>
+          <button class="btn btn-sec" onclick="runScript('train')">▶ Run</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">3. Ablation Study</div><div style="font-size:11px;color:var(--muted)">scripts/ablation.py · 4 configs</div></div>
+          <button class="btn btn-sec" onclick="runScript('ablation')">▶ Run</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">4. Generate Figures</div><div style="font-size:11px;color:var(--muted)">scripts/evaluate.py · Figs 4.1–4.6</div></div>
+          <button class="btn btn-sec" onclick="runScript('evaluate')">▶ Run</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">5. TCO Simulation</div><div style="font-size:11px;color:var(--muted)">scripts/tco_simulation.py</div></div>
+          <button class="btn btn-sec" onclick="runScript('tco')">▶ Run</button>
+        </div>
+        <div style="display:flex;align-items:center;justify-content:space-between">
+          <div><div style="font-size:13px;font-weight:600">6. Network Test</div><div style="font-size:11px;color:var(--muted)">scripts/network_test.py</div></div>
+          <button class="btn btn-sec" onclick="runScript('network')">▶ Run</button>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Script Output</div>
+      <div id="script-status" style="font-size:12px;color:var(--muted);margin-bottom:8px">No script running.</div>
+      <pre id="script-output" style="max-height:350px;overflow-y:auto">—</pre>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+/* ── Mini chart engine (no deps) ──────────────────────────────────────── */
+function drawBarChart(canvasId, labels, datasets, opts={}) {
+  const c = document.getElementById(canvasId); if(!c) return;
+  const ctx = c.getContext('2d'); const W=c.offsetWidth||400; const H=c.height||200;
+  c.width=W*2; c.height=H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#1a2230'; ctx.fillRect(0,0,W,H);
+  const pad={t:20,r:10,b:38,l:44};
+  const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
+  const maxV=Math.max(...datasets.flatMap(d=>d.data),opts.yMax||0)*1.15||1;
+  // Grid
+  ctx.strokeStyle='#2a3548'; ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(1-i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cW,y); ctx.stroke();
+    ctx.fillStyle='#8b98a9'; ctx.font='10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText((maxV*i/4).toFixed(2),pad.l-4,y+3);
+  }
+  // Bars
+  const nGroups=labels.length; const nSets=datasets.length;
+  const groupW=cW/nGroups; const barW=groupW*0.7/nSets;
+  datasets.forEach((ds,si)=>{
+    ctx.fillStyle=ds.color||'#4dabf7';
+    ds.data.forEach((v,gi)=>{
+      const bH=v/maxV*cH; const x=pad.l+gi*groupW+groupW*0.15+si*barW;
+      const y=pad.t+cH-bH;
+      ctx.globalAlpha=0.85; ctx.fillRect(x,y,barW-1,bH); ctx.globalAlpha=1;
+    });
+  });
+  // X labels
+  ctx.fillStyle='#8b98a9'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+  labels.forEach((lbl,gi)=>{
+    const x=pad.l+gi*groupW+groupW/2;
+    lbl.split('\n').forEach((ln,li)=>ctx.fillText(ln,x,pad.t+cH+12+li*11));
+  });
+  // Legend
+  if(datasets.length>1){
+    datasets.forEach((ds,i)=>{
+      ctx.fillStyle=ds.color; ctx.fillRect(pad.l+i*80,4,10,8);
+      ctx.fillStyle='#8b98a9'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(ds.label||'',pad.l+i*80+13,12);
+    });
+  }
+}
+
+function drawLineChart(canvasId, labels, datasets, opts={}) {
+  const c=document.getElementById(canvasId); if(!c) return;
+  const ctx=c.getContext('2d'); const W=c.offsetWidth||500; const H=c.height||200;
+  c.width=W*2; c.height=H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#1a2230'; ctx.fillRect(0,0,W,H);
+  const pad={t:20,r:12,b:28,l:44};
+  const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
+  const allVals=datasets.flatMap(d=>d.data.filter(v=>isFinite(v)));
+  const minV=opts.yMin!==undefined?opts.yMin:Math.min(...allVals)*0.95;
+  const maxV=opts.yMax!==undefined?opts.yMax:Math.max(...allVals)*1.05||1;
+  const rng=maxV-minV||1;
+  // Grid
+  ctx.strokeStyle='#2a3548'; ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){
+    const y=pad.t+cH*(1-i/4);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cW,y); ctx.stroke();
+    ctx.fillStyle='#8b98a9'; ctx.font='9px sans-serif'; ctx.textAlign='right';
+    ctx.fillText((minV+rng*i/4).toFixed(2),pad.l-4,y+3);
+  }
+  // Lines
+  const n=labels.length;
+  datasets.forEach(ds=>{
+    ctx.strokeStyle=ds.color||'#4dabf7'; ctx.lineWidth=ds.width||1.5;
+    ctx.setLineDash(ds.dash||[]);
+    ctx.beginPath();
+    ds.data.forEach((v,i)=>{
+      if(!isFinite(v)) return;
+      const x=pad.l+i/(n-1||1)*cW;
+      const y=pad.t+cH*(1-(v-minV)/rng);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    });
+    ctx.stroke(); ctx.setLineDash([]);
+  });
+  // X labels (every N)
+  const step=Math.max(1,Math.floor(n/8));
+  ctx.fillStyle='#8b98a9'; ctx.font='9px sans-serif'; ctx.textAlign='center';
+  labels.forEach((lbl,i)=>{
+    if(i%step===0)
+      ctx.fillText(lbl,pad.l+i/(n-1||1)*cW,pad.t+cH+12);
+  });
+  // Ref lines
+  (opts.refLines||[]).forEach(rl=>{
+    const y=pad.t+cH*(1-(rl.value-minV)/rng);
+    ctx.strokeStyle=rl.color||'#ffd43b'; ctx.lineWidth=1; ctx.setLineDash([4,3]);
+    ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(pad.l+cW,y); ctx.stroke();
+    ctx.setLineDash([]); ctx.fillStyle=rl.color||'#ffd43b'; ctx.font='9px sans-serif';
+    ctx.textAlign='right'; ctx.fillText(rl.label||'',pad.l+cW,y-3);
+  });
+  // Legend
+  if(datasets.length>1){
+    let lx=pad.l;
+    datasets.forEach(ds=>{
+      ctx.strokeStyle=ds.color; ctx.lineWidth=2;
+      ctx.beginPath(); ctx.moveTo(lx,8); ctx.lineTo(lx+18,8); ctx.stroke();
+      ctx.fillStyle='#8b98a9'; ctx.font='9px sans-serif'; ctx.textAlign='left';
+      ctx.fillText(ds.label||'',lx+21,11); lx+=80;
+    });
+  }
+}
+
+function drawHBarChart(canvasId, labels, values, colors, opts={}) {
+  const c=document.getElementById(canvasId); if(!c) return;
+  const ctx=c.getContext('2d'); const W=c.offsetWidth||400; const H=c.height||200;
+  c.width=W*2; c.height=H*2; ctx.scale(2,2);
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#1a2230'; ctx.fillRect(0,0,W,H);
+  const pad={t:10,r:50,b:10,l:100};
+  const cW=W-pad.l-pad.r; const cH=H-pad.t-pad.b;
+  const maxV=Math.max(...values,0.01)*1.1;
+  const n=labels.length; const barH=cH/n*0.65;
+  labels.forEach((lbl,i)=>{
+    const y=pad.t+i*(cH/n)+cH/n*0.175;
+    const bW=values[i]/maxV*cW;
+    ctx.fillStyle=colors[i%colors.length]; ctx.globalAlpha=0.85;
+    ctx.fillRect(pad.l,y,bW,barH); ctx.globalAlpha=1;
+    ctx.fillStyle='#8b98a9'; ctx.font='10px sans-serif'; ctx.textAlign='right';
+    ctx.fillText(lbl,pad.l-5,y+barH/2+4);
+    ctx.fillStyle='#e6edf3'; ctx.textAlign='left';
+    ctx.fillText(values[i].toFixed(2),pad.l+bW+4,y+barH/2+4);
+  });
+}
+
+/* ── API helpers ──────────────────────────────────────────────────────── */
+const API = '';
+async function get(path){
+  try{const r=await fetch(API+path); if(!r.ok) return null; return r.json();}
+  catch{return null;}
+}
+async function post(path, body={}) {
+  try{const r=await fetch(API+path,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+  if(!r.ok) return null; return r.json();}catch{return null;}
+}
+function fmt(v,dec=2){return v!=null?Number(v).toFixed(dec):'—';}
+function badge(ok){return ok?'<span class="badge badge-green">✓ Yes</span>':'<span class="badge badge-red">✗ No</span>';}
+function exists(v){return v!=null&&v!==undefined;}
+
+/* ── Overview ─────────────────────────────────────────────────────────── */
+async function loadOverview() {
+  const [health, metrics, results] = await Promise.all([
+    get('/health'), get('/metrics'), get('/results')]);
+
+  // Status table
+  const stModel = health?.model_loaded;
+  document.getElementById('st-model').innerHTML = badge(stModel);
+  document.getElementById('st-metrics').innerHTML = badge(!!metrics);
+  document.getElementById('st-figs').innerHTML = results?.figures?.length
+    ? `<span class="badge badge-green">${results.figures.length} files</span>` : badge(false);
+  document.getElementById('st-tco').innerHTML = badge(results?.tables?.tco);
+  document.getElementById('st-net').innerHTML = badge(results?.tables?.network);
+  document.getElementById('arch-channels').textContent = health?.channels?.length||'—';
+
+  if(metrics) {
+    const tm = metrics.test_metrics||{};
+    document.getElementById('kpi-auprc').textContent = fmt(tm.failure_auprc,3);
+    document.getElementById('kpi-rmse').textContent  = fmt(tm.rul_rmse,2);
+    document.getElementById('kpi-mmd').textContent   =
+      fmt(metrics.domain_diagnostics?.post_adaptation_mmd||
+          metrics.domain_shift_per_asset?.composite?.post_mmd, 3);
+    // Per-asset
+    const tbody = document.getElementById('per-asset-body');
+    const pa = metrics.per_asset_class||{};
+    const acLabels = {'cmaps_turbofan':'CMAPSS (Turbofan)','ai4i_manufacturing':'AI4I (Manuf.)',
+                      '3w_offshore_well':'3W (Offshore)','espset_pump':'ESPset (ESP)'};
+    tbody.innerHTML = Object.entries(pa).map(([ac,m])=>`
+      <tr><td>${acLabels[ac]||ac}</td>
+      <td><span class="badge ${m.failure_auprc>=0.8?'badge-green':'badge-yellow'}">${fmt(m.failure_auprc,3)}</span></td>
+      <td>${fmt(m.rul_rmse,2)}</td></tr>`).join('') ||
+      '<tr><td colspan="3" style="color:var(--muted)">Run train.py to generate</td></tr>';
+    // arch
+    document.getElementById('arch-time').textContent =
+      metrics.training_time_sec ? `${(metrics.training_time_sec/60).toFixed(1)} min` : '—';
+    document.getElementById('arch-device').textContent = metrics.device||'—';
+  }
+  // TCO NPV KPI
+  const tco = await get('/results/tco');
+  if(tco?.table_4_9_alignment) {
+    const t49 = tco.table_4_9_alignment;
+    document.getElementById('kpi-npv').textContent = '$'+fmt(t49.npv_5yr_mean_M,0);
+  }
+}
+
+/* ── Model page ───────────────────────────────────────────────────────── */
+async function loadModel() {
+  const history = await get('/metrics/history');
+  if(!history||!history.length) return;
+  const epochs   = history.map(h=>h.epoch+1);
+  const trLoss   = history.map(h=>h.train_loss);
+  const valLoss  = history.map(h=>h.val_loss||NaN);
+  const valAuprc = history.map(h=>h.val_failure_auprc);
+  const valRmse  = history.map(h=>h.val_rul_rmse);
+  const lambda   = history.map(h=>h.grl_lambda||0);
+
+  // 4-panel combined into one canvas via side-by-side
+  // We'll use 4 stacked sub-charts via separate canvases embedded in one panel
+  // For simplicity: one chart with AUPRC
+  drawLineChart('canvas-train', epochs.map(String), [
+    {data:trLoss,  color:'#4dabf7', label:'Train loss', width:1.5},
+    {data:valLoss, color:'#ff6b6b', label:'Val loss', dash:[4,3], width:1.5},
+  ]);
+}
+
+/* ── Domain page ──────────────────────────────────────────────────────── */
+async function loadDomain() {
+  const d = await get('/results/domain');
+  if(!d) return;
+  const comp = d.composite||{};
+  document.getElementById('d-premmd').textContent  = fmt(comp.pre_mmd,4);
+  document.getElementById('d-postmmd').textContent = fmt(comp.post_mmd,4);
+  document.getElementById('d-redpct').textContent  = fmt(comp.mmd_reduction_pct,1)+'%';
+
+  const acLabels = {'cmaps_turbofan':'CMAPSS','ai4i_manufacturing':'AI4I',
+                    '3w_offshore_well':'3W','espset_pump':'ESPset'};
+  const tbody = document.getElementById('domain-table-body');
+  tbody.innerHTML = Object.entries(d)
+    .filter(([k])=>k!=='composite')
+    .map(([ac,v])=>`<tr>
+      <td>${acLabels[ac]||ac}</td>
+      <td><span class="badge badge-red">${fmt(v.pre_mmd,4)}</span></td>
+      <td>${fmt(v.pre_w1,4)}</td>
+      <td><span class="badge badge-green">${fmt(v.post_mmd,4)}</span></td>
+      <td>${fmt(v.post_w1,4)}</td>
+      <td><span class="badge badge-blue">${fmt(v.mmd_reduction_pct,1)}%</span></td>
+    </tr>`).join('');
+}
+
+/* ── Performance page ─────────────────────────────────────────────────── */
+async function loadPerformance() {
+  const [metrics, shap] = await Promise.all([get('/metrics'), get('/results/shap')]);
+  if(!metrics) return;
+  const tm = metrics.test_metrics||{};
+  document.getElementById('perf-auprc').textContent = fmt(tm.failure_auprc,3);
+  document.getElementById('perf-rmse').textContent  = fmt(tm.rul_rmse,2);
+  document.getElementById('perf-doma').textContent  = fmt(tm.domain_accuracy,3);
+  document.getElementById('perf-loss').textContent  = fmt(tm.loss,1);
+
+  const pa = metrics.per_asset_class||{};
+  const acOrder = ['cmaps_turbofan','ai4i_manufacturing','3w_offshore_well','espset_pump'];
+  const acShort = ['CMAPSS','AI4I','3W','ESPset'];
+  const acCols  = ['#4dabf7','#51cf66','#ffd43b','#ff6b6b'];
+  const auprcs = acOrder.map(k=>pa[k]?.failure_auprc||0);
+  const rmses  = acOrder.map(k=>pa[k]?.rul_rmse||0);
+
+  drawBarChart('canvas-auprc', acShort, [{data:auprcs,color:'#51cf66',label:'AUPRC'}],
+    {yMax:1.0});
+  drawBarChart('canvas-rmse',  acShort, [{data:rmses, color:'#4dabf7',label:'RMSE'}]);
+
+  if(shap?.length) {
+    const top10 = shap.slice(0,10);
+    drawHBarChart('canvas-shap',
+      top10.map(s=>s.channel),
+      top10.map(s=>s.attribution_pct),
+      ['#4dabf7','#51cf66','#ffd43b','#ff6b6b','#cc5de8','#ff922b',
+       '#20c997','#74c0fc','#a9e34b','#f783ac']);
+  }
+}
+
+/* ── Ablation page ────────────────────────────────────────────────────── */
+async function loadAblation() {
+  const abl = await get('/metrics/ablation');
+  if(!abl) return;
+  const configs = Object.keys(abl);
+  const shortNames = ['Full\n(GRL+SimCLR)','GRL only\n(−SimCLR)','SimCLR only\n(−GRL)','Neither\n(Baseline)'];
+  const auprcs = configs.map(c=>abl[c].failure_auprc||0);
+  const rmses  = configs.map(c=>abl[c].rul_rmse||0);
+  const cols   = ['#51cf66','#ffd43b','#ff922b','#8b98a9'];
+
+  drawBarChart('canvas-abl-auprc', shortNames,
+    [{data:auprcs,color:'#51cf66',label:'AUPRC'}], {yMax:1.0});
+  drawBarChart('canvas-abl-rmse', shortNames,
+    [{data:rmses, color:'#4dabf7',label:'RMSE'}]);
+
+  const full_auprc = abl[configs[0]]?.failure_auprc||0;
+  const tbody = document.getElementById('abl-table-body');
+  tbody.innerHTML = configs.map((c,i)=>{
+    const m=abl[c]; const delta=m.failure_auprc-full_auprc;
+    const cls=delta<-0.05?'badge-red':delta<0?'badge-yellow':'badge-green';
+    return `<tr>
+      <td>${shortNames[i].replace('\n',' ')}</td>
+      <td><span class="badge ${cls}">${fmt(m.failure_auprc,3)}</span></td>
+      <td>${fmt(m.rul_rmse,3)}</td>
+      <td>${fmt(m.domain_accuracy,3)}</td>
+      <td><span class="badge ${i===0?'badge-blue':delta<0?'badge-red':'badge-yellow'}">${i===0?'—':fmt(delta,3)}</span></td>
+    </tr>`;
+  }).join('');
+}
+
+/* ── Figures page ─────────────────────────────────────────────────────── */
+async function refreshFigures() {
+  const data = await get('/results/figures');
+  const grid = document.getElementById('fig-grid');
+  if(!data?.figures?.length) {
+    grid.innerHTML='<div style="color:var(--muted);font-size:13px">No figures yet. Run evaluate.py.</div>';
+    return;
+  }
+  const figLabels = {
+    'fig4_1_tsne.png':'Fig 4.1 — t-SNE Embeddings (Domain Adaptation)',
+    'fig4_2_training_curves.png':'Fig 4.2 — Training Curves (43 Epochs)',
+    'fig4_3_ablation.png':'Fig 4.3 — Ablation Study',
+    'fig4_4_rul_scatter.png':'Fig 4.4 — RUL Prediction Scatter',
+    'fig4_5_precision_recall.png':'Fig 4.5 — Precision-Recall Curves',
+    'fig4_6_shap_proxy.png':'Fig 4.6 — Feature Attribution (SHAP Proxy)',
+  };
+  grid.innerHTML = data.figures.map(f=>`
+    <div class="fig-card">
+      <img src="${f.url}" alt="${f.name}" loading="lazy">
+      <div class="fig-label">${figLabels[f.name]||f.name}</div>
+    </div>`).join('');
+}
+
+async function triggerEval() {
+  const s = document.getElementById('eval-status');
+  s.textContent='Starting…'; s.style.color='var(--yellow)';
+  await post('/run/evaluate');
+  s.textContent='Running (may take 2–5 min). Refresh when done.';
+  pollStatus('evaluate.py', s, ()=>{refreshFigures();s.style.color='var(--green)';});
+}
+
+/* ── TCO page ─────────────────────────────────────────────────────────── */
+async function loadTco() {
+  const tco = await get('/results/tco');
+  if(!tco) return;
+  const t49 = tco.table_4_9_alignment||{};
+  const hl  = tco.headline||{};
+  const nat = tco.national_scale||{};
+  document.getElementById('tco-npv').textContent   = '$'+fmt(t49.npv_5yr_mean_M,0)+'M';
+  document.getElementById('tco-saving').textContent = '$'+fmt(t49.annual_saving_mean_M,0)+'M';
+  document.getElementById('tco-pct').textContent   = fmt(t49.annual_saving_pct_mean,1)+'%';
+  document.getElementById('tco-prob').textContent  = fmt((hl.p_npv_positive||0)*100,1)+'%';
+  document.getElementById('tco-react').textContent = '$'+fmt(t49.reactive_annual_tco_mean_M,0)+'M ± $'+fmt(t49.reactive_annual_tco_sd_M,0)+'M';
+  document.getElementById('tco-nad').textContent   = '$'+fmt(t49.nadissp_annual_tco_mean_M,0)+'M ± $'+fmt(t49.nadissp_annual_tco_sd_M,0)+'M';
+  document.getElementById('tco-delta').textContent = '−$'+fmt(t49.annual_saving_mean_M,0)+'M (−'+fmt(t49.annual_saving_pct_mean,1)+'%)';
+  document.getElementById('tco-npv2').textContent  = '$'+fmt(t49.npv_5yr_mean_M,0)+'M ± $'+fmt(t49.npv_5yr_sd_M,0)+'M';
+  document.getElementById('tco-ci').textContent    = '$'+fmt(t49.uncertainty_band_35pct_low_M,0)+'M – $'+fmt(t49.uncertainty_band_35pct_high_M,0)+'M';
+  document.getElementById('tco-payback').textContent = fmt(hl.median_payback_year,1)+' yr';
+  document.getElementById('tco-irr').textContent   = fmt((hl.median_irr||0)*100,1)+'%';
+  document.getElementById('tco-national').textContent = '>$'+fmt(nat.annual_saving_national_M,0)+'M/yr';
+
+  // Asset-class bar chart
+  const ac = tco.asset_class_annual_savings_M||{};
+  const acLabels = {'cmaps_turbofan':'CMAPSS','ai4i_manufacturing':'AI4I','3w_offshore_well':'3W','espset_pump':'ESPset'};
+  drawBarChart('canvas-tco-ac',
+    Object.keys(ac).map(k=>acLabels[k]||k),
+    [{data:Object.values(ac), color:'#51cf66', label:'Annual saving $M'}]);
+
+  // Sobol
+  const sens = await get('/results/tco').then(r=>null).catch(()=>null);
+  // Try sensitivity.json
+  const sensFull = await fetch('/results/tco').then(r=>r.json()).catch(()=>null);
+}
+
+async function runTco() {
+  const s = document.getElementById('tco-run-status');
+  s.textContent='Starting simulation…'; s.style.color='var(--yellow)';
+  await post('/run/tco');
+  pollStatus('tco_simulation', s, ()=>{loadTco();s.style.color='var(--green)';});
+}
+
+/* ── Network page ─────────────────────────────────────────────────────── */
+async function loadNetwork() {
+  const net = await get('/results/network');
+  if(!net) return;
+
+  // Method banner
+  const banner = document.getElementById('net-method-banner');
+  if(net.test_method==='tc_netem') {
+    banner.className='alert alert-info';
+    banner.textContent='✓ Kernel-level testing via tc netem — results are rigorously defensible for the dissertation.';
+  } else {
+    banner.className='alert alert-warn';
+    banner.textContent='⚠ Application-layer simulation used (tc netem not available in this environment). Dissertation must note: sensor dropout proxy, not kernel-level packet loss.';
+  }
+
+  // Latency
+  const lat = net.latency||{};
+  document.getElementById('net-p50').textContent = fmt(lat.p50_ms,1)+'ms';
+  document.getElementById('net-p95').textContent = fmt(lat.p95_ms,1)+'ms';
+  document.getElementById('net-tmet').textContent = fmt(lat.within_120ms_pct,1)+'%';
+
+  // Table 4.10
+  const t410 = lat.table_4_10||[];
+  const latBody = document.getElementById('lat-table');
+  latBody.innerHTML = t410.map(r=>`<tr>
+    <td style="font-size:11px">${r.hardware}</td>
+    <td>${fmt(r.mean_ms,1)}</td><td>${fmt(r.p95_ms,1)}</td>
+    <td>${badge(r.target_met)}</td>
+    <td style="font-size:10px;color:var(--muted)">${r.source}</td>
+  </tr>`).join('');
+
+  // Table 4.11
+  const pkt = net.packet_loss||[];
+  const pktBody = document.getElementById('pkt-table');
+  pktBody.innerHTML = pkt.map(r=>`<tr>
+    <td>${r.loss_rate_pct}%</td>
+    <td>${fmt(r.auprc,3)}</td>
+    <td><span class="badge ${r.auprc_drop_pct>10?'badge-red':r.auprc_drop_pct>5?'badge-yellow':'badge-green'}">${fmt(r.auprc_drop_pct,1)}%</span></td>
+    <td style="font-size:10px;color:var(--muted)">${r.inference_mode||''}</td>
+  </tr>`).join('');
+
+  // Chart
+  if(pkt.length) {
+    drawLineChart('canvas-pktloss', pkt.map(r=>r.loss_rate_pct+'%'),
+      [{data:pkt.map(r=>r.auprc), color:'#4dabf7', label:'AUPRC', width:2}],
+      {yMin:0, yMax:1, refLines:[{value:0.85,color:'#ffd43b',label:'Target 0.85'}]});
+  }
+}
+
+async function runNetTest() {
+  const s = document.getElementById('net-run-status');
+  s.textContent='Running…'; s.style.color='var(--yellow)';
+  await post('/run/network-test');
+  pollStatus('network_test', s, ()=>{loadNetwork();s.style.color='var(--green)';});
+}
+
+/* ── Predict page ─────────────────────────────────────────────────────── */
+const latHistory = [];
+async function runPredict() {
+  const btn = document.getElementById('pred-btn');
+  btn.disabled = true;
+  const degrad = parseInt(document.getElementById('pred-degrad').value)/100;
+  const ac = document.getElementById('pred-class').value;
+  const assetId = document.getElementById('pred-id').value;
+
+  // Build synthetic sensor readings with degradation baked in
+  const sequence = Array.from({length:50},(_,t)=>{
+    const d = degrad * (t/49);
+    return {
+      pressure_1: 0.7 - 0.3*d + (Math.random()-0.5)*0.02,
+      pressure_2: 0.65 - 0.25*d + (Math.random()-0.5)*0.02,
+      vibration_x: 0.3 + 0.5*Math.pow(d,1.5) + (Math.random()-0.5)*0.03,
+      vibration_y: 0.28 + 0.45*Math.pow(d,1.5) + (Math.random()-0.5)*0.03,
+      temperature_1: 0.4 + 0.3*d + (Math.random()-0.5)*0.015,
+      temperature_2: 0.45 + 0.28*d + (Math.random()-0.5)*0.015,
+      motor_current: 0.5 + 0.25*d + (Math.random()-0.5)*0.02,
+      frequency: 0.6 - 0.1*d + (Math.random()-0.5)*0.01,
+      torque: 0.55 + 0.2*d + (Math.random()-0.5)*0.02,
+      rotational_speed: 0.7 - 0.15*d + (Math.random()-0.5)*0.01,
+    };
+  });
+
+  const res = await post('/predict', {asset_id:assetId, asset_class:ac, sequence});
+  btn.disabled = false;
+  const div = document.getElementById('pred-result');
+
+  if(!res) {
+    div.innerHTML='<div class="panel-title">Result</div><div style="color:var(--red)">API error — is model loaded?</div>';
+    return;
+  }
+
+  const riskCls = {critical:'badge-red',elevated:'badge-yellow',watch:'badge-blue',normal:'badge-green'};
+  div.innerHTML = `<div class="panel-title">Prediction · ${res.latency_ms}ms</div>
+    <table>
+      <tr><td>Asset ID</td><td><strong>${res.asset_id}</strong></td></tr>
+      <tr><td>RUL Estimate</td><td><strong class="accent">${res.rul_estimate} ${res.rul_unit}</strong></td></tr>
+      <tr><td>Failure Probability</td><td><strong>${(res.failure_probability*100).toFixed(1)}%</strong></td></tr>
+      <tr><td>Risk Level</td><td><span class="badge ${riskCls[res.risk_level]||'badge-grey'}">${res.risk_level}</span></td></tr>
+      <tr><td>Weibull Scale λ</td><td>${res.weibull_scale}</td></tr>
+      <tr><td>Weibull Shape k</td><td>${res.weibull_shape}</td></tr>
+      <tr><td>Inference Latency</td><td>${res.latency_ms} ms <span class="badge ${res.latency_ms<120?'badge-green':'badge-red'}">${res.latency_ms<120?'✓ <120ms':'✗ >120ms'}</span></td></tr>
+    </table>`;
+
+  latHistory.push(res.latency_ms);
+  if(latHistory.length>50) latHistory.shift();
+  drawLineChart('canvas-lat', latHistory.map((_,i)=>String(i+1)),
+    [{data:latHistory, color:'#4dabf7', label:'Latency (ms)', width:2}],
+    {yMin:0, refLines:[{value:120,color:'#ff6b6b',label:'120ms target'}]});
+}
+
+/* ── Run scripts page ─────────────────────────────────────────────────── */
+const scriptMap = {
+  generate: '/run/generate',  // or direct subprocess via backend
+  train:    '/run/train',
+  ablation: '/run/ablation',
+  evaluate: '/run/evaluate',
+  tco:      '/run/tco',
+  network:  '/run/network-test',
+};
+
+const statusMap = {
+  generate: 'generate',
+  train:    'train',
+  ablation: 'ablation',
+  evaluate: 'evaluate',
+  tco:      'tco_simulation',
+  network:  'network_test',
+};
+async function runScript(name) {
+  const endpoint = scriptMap[name];
+  const scriptFile = statusMap[name];
+  document.getElementById('script-status').textContent = `Running ${scriptFile}…`;
+  document.getElementById('script-output').textContent = 'Starting…';
+  if(endpoint) {
+    await post(endpoint);
+    pollStatus(scriptFile, null, null, true);
+  }
+}
+
+let pollTimer = null;
+function pollStatus(scriptFile, statusEl, onDone, updateOutput=false) {
+  if(pollTimer) clearInterval(pollTimer);
+  pollTimer = setInterval(async ()=>{
+    const r = await get(`/run/status/${scriptFile}`);
+    if(!r) return;
+    const msg = r.status==='running'?`Running ${scriptFile}… (${Math.round(Date.now()/1000%1000)}s elapsed)`:
+                r.status==='done'?`✓ ${scriptFile} completed in ${r.elapsed}s`:
+                r.status==='error'?`✗ Error: ${r.detail||'see output'}`:
+                r.status||'unknown';
+    if(statusEl) {
+      statusEl.textContent = msg;
+      statusEl.style.color = r.status==='done'?'var(--green)':r.status==='error'?'var(--red)':'var(--yellow)';
+    }
+    if(updateOutput) {
+      document.getElementById('script-status').textContent = msg;
+      document.getElementById('script-output').textContent =
+        (r.stdout||'')+(r.stderr?'\n[STDERR]\n'+r.stderr:'') || '(no output yet)';
+    }
+    if(r.status==='done'||r.status==='error'||r.status==='timeout') {
+      clearInterval(pollTimer);
+      if(onDone&&r.status==='done') onDone();
+    }
+  }, 1500);
+}
+
+/* ── SimCLR page ──────────────────────────────────────────────────────── */
+async function loadSimCLR() {
+  const data = await get('/results/simclr');
+  if (!data || !data.length) {
+    document.getElementById('sc-init').textContent = 'Not run';
+    return;
+  }
+  const first = data[0]; const last = data[data.length - 1];
+  document.getElementById('sc-init').textContent   = fmt(first.nt_xent_loss, 4);
+  document.getElementById('sc-final').textContent  = fmt(last.nt_xent_loss,  4);
+  document.getElementById('sc-epochs').textContent = data.length;
+  const init = first.nt_xent_loss; const fin = last.nt_xent_loss;
+  const reduc = (init - fin) / Math.max(init, 1e-9) * 100;
+  document.getElementById('sc-reduc').textContent  = fmt(reduc, 1) + '%';
+
+  const epochs = data.map(h => h.epoch + 1);
+  const loss   = data.map(h => h.nt_xent_loss);
+  const sim    = data.map(h => h.mean_view_sim);
+
+  drawLineChart('canvas-ntxent', epochs.map(String), [
+    {data: loss, color: '#4dabf7', label: 'NT-Xent loss', width: 2},
+  ], {yMin: 0, refLines: [
+    {value: 0.083, color: '#51cf66', label: 'Paper final 0.083'},
+    {value: 0.841, color: '#ff6b6b', label: 'Paper initial 0.841'},
+  ]});
+
+  drawLineChart('canvas-viewsim', epochs.map(String), [
+    {data: sim, color: '#51cf66', label: 'Mean view cosine sim', width: 2},
+  ], {yMin: 0, yMax: 1, refLines: [
+    {value: 0.9, color: '#ffd43b', label: 'Target ≥ 0.9'},
+  ]});
+}
+
+async function runSimCLR() {
+  const s = document.getElementById('simclr-run-status');
+  s.textContent = 'Starting…'; s.style.color = 'var(--yellow)';
+  await post('/run/pretrain');
+  pollStatus('pretrain', s, () => { loadSimCLR(); s.style.color = 'var(--green)'; });
+}
+
+/* ── Navigation ───────────────────────────────────────────────────────── */
+const pageLoaders = {
+  overview:    loadOverview,
+  model:       loadModel,
+  simclr:      loadSimCLR,
+  domain:      loadDomain,
+  performance: loadPerformance,
+  ablation:    loadAblation,
+  figures:     refreshFigures,
+  tco:         loadTco,
+  network:     loadNetwork,
+};
+
+document.querySelectorAll('nav a[data-page]').forEach(a=>{
+  a.addEventListener('click', e=>{
+    e.preventDefault();
+    document.querySelectorAll('nav a').forEach(x=>x.classList.remove('active'));
+    a.classList.add('active');
+    const page = a.dataset.page;
+    document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+    document.getElementById('page-'+page)?.classList.add('active');
+    pageLoaders[page]?.();
+  });
+});
+
+// Initial load
+loadOverview();
+</script>
+</body>
+</html>

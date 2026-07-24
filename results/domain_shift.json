@@ -1,0 +1,35 @@
+{
+  "cmaps_turbofan": {
+    "pre_mmd": 0.063,
+    "pre_w1": 0.1068,
+    "post_mmd": 0.0,
+    "post_w1": 83.4202,
+    "mmd_reduction_pct": 100.0
+  },
+  "ai4i_manufacturing": {
+    "pre_mmd": 0.0536,
+    "pre_w1": 0.0862,
+    "post_mmd": 0.0,
+    "post_w1": 33.8544,
+    "mmd_reduction_pct": 100.0
+  },
+  "3w_offshore_well": {
+    "pre_mmd": 0.0753,
+    "pre_w1": 0.0255,
+    "post_mmd": 0.0,
+    "post_w1": 32.0279,
+    "mmd_reduction_pct": 100.0
+  },
+  "espset_pump": {
+    "pre_mmd": 0.0454,
+    "pre_w1": 0.2625,
+    "post_mmd": 0.0,
+    "post_w1": 314.3223,
+    "mmd_reduction_pct": 100.0
+  },
+  "composite": {
+    "pre_mmd": 0.0593,
+    "post_mmd": 0.0,
+    "mmd_reduction_pct": 100.0
+  }
+}

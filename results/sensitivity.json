@@ -1,0 +1,24 @@
+{
+  "S1": {
+    "reactive_lambda": 0.291,
+    "nadissp_lambda": 0.1721,
+    "daily_downtime_rate": 0.0248,
+    "outage_duration": 0.2578,
+    "capex": 0.0058,
+    "opex": -0.0,
+    "labour_rate": 0.0001,
+    "parts_premium": 0.0015
+  },
+  "ST": {
+    "reactive_lambda": 0.445,
+    "nadissp_lambda": 0.2632,
+    "daily_downtime_rate": 0.0799,
+    "outage_duration": 0.3907,
+    "capex": 0.0041,
+    "opex": 0.0,
+    "labour_rate": 0.0,
+    "parts_premium": 0.0001
+  },
+  "var_y": 1281570.323,
+  "n_base": 512
+}

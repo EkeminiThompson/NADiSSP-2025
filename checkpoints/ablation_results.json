@@ -1,0 +1,22 @@
+{
+  "full_model (GRL+SimCLR)": {
+    "rul_rmse": 11.0357,
+    "failure_auprc": 0.9656,
+    "domain_accuracy": 0.6078
+  },
+  "GRL_only (SimCLR ablated)": {
+    "rul_rmse": 10.9617,
+    "failure_auprc": 0.9654,
+    "domain_accuracy": 0.6067
+  },
+  "SimCLR_only (GRL ablated)": {
+    "rul_rmse": 11.0357,
+    "failure_auprc": 0.9656,
+    "domain_accuracy": 0.9811
+  },
+  "neither (baseline)": {
+    "rul_rmse": 10.9529,
+    "failure_auprc": 0.966,
+    "domain_accuracy": 0.9789
+  }
+}

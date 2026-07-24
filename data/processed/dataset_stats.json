@@ -1,0 +1,26 @@
+{
+  "n_source_rows": 180000,
+  "n_target_rows": 120000,
+  "n_combined_rows": 300000,
+  "failure_prevalence_pct": 45.53,
+  "domain_shift_proxy": 0.673,
+  "channels": [
+    "pressure_1",
+    "pressure_2",
+    "vibration_x",
+    "vibration_y",
+    "temperature_1",
+    "temperature_2",
+    "motor_current",
+    "frequency",
+    "torque",
+    "rotational_speed"
+  ],
+  "seq_len": 50,
+  "asset_classes": [
+    "cmaps_turbofan",
+    "ai4i_manufacturing",
+    "3w_offshore_well",
+    "espset_pump"
+  ]
+}

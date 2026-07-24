@@ -1,0 +1,52 @@
+[
+  {
+    "rank": 1,
+    "channel": "temperature_2",
+    "attribution_pct": 31.13
+  },
+  {
+    "rank": 2,
+    "channel": "pressure_1",
+    "attribution_pct": 20.82
+  },
+  {
+    "rank": 3,
+    "channel": "pressure_2",
+    "attribution_pct": 17.12
+  },
+  {
+    "rank": 4,
+    "channel": "temperature_1",
+    "attribution_pct": 8.64
+  },
+  {
+    "rank": 5,
+    "channel": "vibration_x",
+    "attribution_pct": 8.04
+  },
+  {
+    "rank": 6,
+    "channel": "motor_current",
+    "attribution_pct": 7.8
+  },
+  {
+    "rank": 7,
+    "channel": "torque",
+    "attribution_pct": 5.07
+  },
+  {
+    "rank": 8,
+    "channel": "rotational_speed",
+    "attribution_pct": 1.39
+  },
+  {
+    "rank": 9,
+    "channel": "frequency",
+    "attribution_pct": 0.0
+  },
+  {
+    "rank": 10,
+    "channel": "vibration_y",
+    "attribution_pct": 0.0
+  }
+]

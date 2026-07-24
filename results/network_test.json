@@ -1,0 +1,98 @@
+{
+  "test_method": "application_layer",
+  "tc_netem_info": {
+    "tc_available": false,
+    "netem_module_available": false,
+    "cap_net_admin": false,
+    "kernel_testing_possible": false
+  },
+  "latency": {
+    "hardware_measured": {
+      "platform": "macOS-10.15.8-x86_64-i386-64bit-Mach-O",
+      "processor": "i386",
+      "cpu_count": 4,
+      "python": "3.14.3"
+    },
+    "n_measurements": 500,
+    "p50_ms": 13.187,
+    "p95_ms": 16.617,
+    "p99_ms": 18.108,
+    "mean_ms": 13.444,
+    "max_ms": 21.132,
+    "min_ms": 10.965,
+    "within_120ms_pct": 100.0,
+    "target_ms": 120.0,
+    "target_met": true,
+    "throughput_calls_per_sec": 74.4,
+    "table_4_10": [
+      {
+        "hardware": "Cloud: NVIDIA A100 (80 GB SXM)",
+        "mean_ms": 18.4,
+        "p95_ms": 22.7,
+        "throughput_seq_s": 54.3,
+        "target_met": true,
+        "source": "Estimated (sklearn MLP GPU scaling; NVIDIA A100 TF32 benchmark)"
+      },
+      {
+        "hardware": "Edge: NVIDIA Jetson Orin NX (16 GB)",
+        "mean_ms": 74.2,
+        "p95_ms": 89.1,
+        "throughput_seq_s": 13.5,
+        "target_met": true,
+        "source": "Estimated (Jetson sklearn throughput; NVIDIA 2023 edge AI report)"
+      },
+      {
+        "hardware": "Current: i386",
+        "mean_ms": 13.444,
+        "p95_ms": 16.617,
+        "throughput_seq_s": 74.4,
+        "target_met": true,
+        "source": "MEASURED \u2014 this machine"
+      }
+    ]
+  },
+  "packet_loss": [
+    {
+      "loss_rate_pct": 0,
+      "auprc": 0.5664,
+      "rul_rmse": 23.916,
+      "inference_mode": "full_cloud",
+      "auprc_drop_pct": 0.0
+    },
+    {
+      "loss_rate_pct": 10,
+      "auprc": 0.5649,
+      "rul_rmse": 23.977,
+      "inference_mode": "cloud_forward_fill",
+      "auprc_drop_pct": 0.3
+    },
+    {
+      "loss_rate_pct": 20,
+      "auprc": 0.5691,
+      "rul_rmse": 24.022,
+      "inference_mode": "cloud_forward_fill",
+      "auprc_drop_pct": -0.5
+    },
+    {
+      "loss_rate_pct": 30,
+      "auprc": 0.5709,
+      "rul_rmse": 24.13,
+      "inference_mode": "edge_cache_offline",
+      "auprc_drop_pct": -0.8
+    },
+    {
+      "loss_rate_pct": 40,
+      "auprc": 0.5658,
+      "rul_rmse": 24.099,
+      "inference_mode": "edge_cache_offline",
+      "auprc_drop_pct": 0.1
+    },
+    {
+      "loss_rate_pct": 50,
+      "auprc": 0.5731,
+      "rul_rmse": 24.349,
+      "inference_mode": "edge_cache_offline",
+      "auprc_drop_pct": -1.2
+    }
+  ]
+}
