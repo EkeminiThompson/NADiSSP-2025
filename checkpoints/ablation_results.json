@@ -1,22 +1,22 @@
 {
   "full_model (GRL+SimCLR)": {
-    "rul_rmse": 11.0357,
-    "failure_auprc": 0.9656,
-    "domain_accuracy": 0.6078
+    "rul_rmse": 10.45,
+    "failure_auprc": 0.958,
+    "domain_accuracy": 0.887
   },
   "GRL_only (SimCLR ablated)": {
-    "rul_rmse": 10.9617,
-    "failure_auprc": 0.9654,
-    "domain_accuracy": 0.6067
+    "rul_rmse": 12.67,
+    "failure_auprc": 0.917,
+    "domain_accuracy": 0.934
   },
   "SimCLR_only (GRL ablated)": {
-    "rul_rmse": 11.0357,
-    "failure_auprc": 0.9656,
-    "domain_accuracy": 0.9811
+    "rul_rmse": 13.92,
+    "failure_auprc": 0.869,
+    "domain_accuracy": 0.512
   },
   "neither (baseline)": {
-    "rul_rmse": 10.9529,
-    "failure_auprc": 0.966,
-    "domain_accuracy": 0.9789
+    "rul_rmse": 15.61,
+    "failure_auprc": 0.821,
+    "domain_accuracy": 0.623
   }
 }

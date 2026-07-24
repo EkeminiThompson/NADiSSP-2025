@@ -27,10 +27,11 @@ from sklearn.manifold import TSNE
 from sklearn.metrics import precision_recall_curve, average_precision_score, mean_squared_error
 from sklearn.preprocessing import StandardScaler
 from scipy.stats import wasserstein_distance
+import joblib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from data.dataset import load_units, build_arrays, CHANNELS
-from models.nadissp import NADiSSP, extract_features
+from models.nadissp import extract_features
 from scripts.train import mmd_rbf, wasserstein1_approx
 
 BASE_DIR    = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -63,17 +64,66 @@ AC_LABELS = {"cmaps_turbofan":"CMAPSS\n(Turbofan)",
 
 
 def load_model_and_data():
+    """Load the trained model and dataset."""
     model_path = os.path.join(CKPT_DIR, "nadissp_model.joblib")
     if not os.path.exists(model_path):
         raise FileNotFoundError(f"Model not found at {model_path}. Run train.py first.")
-    model = NADiSSP.load(model_path)
-
+    
+    # Load the model dictionary (saved by train.py)
+    model_dict = joblib.load(model_path)
+    
+    # Extract components
+    clf = model_dict.get('clf')  # HistGradientBoostingClassifier for failure
+    reg = model_dict.get('reg')  # HistGradientBoostingRegressor for RUL
+    dom_clf = model_dict.get('dom_clf')  # LogisticRegression for domain
+    scaler = model_dict.get('scaler')  # StandardScaler
+    imputer = model_dict.get('imputer')  # SimpleImputer
+    
+    # Load data
     df = pd.read_csv(DATA_PATH)
     units = load_units(df)
     X, rul, fail, dom, acs = build_arrays(units)
+    
+    # Extract features
     F = extract_features(X)
-    F_s = model._feat_scaler.transform(F)
-    Z = model._encode(F_s)
+    
+    # Scale and impute
+    F_s = scaler.transform(F)
+    F_s = imputer.transform(F_s)
+    
+    # Use scaled features as representation
+    Z = F_s
+    
+    # Create a simple wrapper object
+    class ModelWrapper:
+        def __init__(self, clf, reg, dom_clf, scaler, imputer):
+            self.clf = clf
+            self.reg = reg
+            self.dom_clf = dom_clf
+            self._feat_scaler = scaler
+            self._imputer = imputer
+            self.failure_head = clf
+            self.rul_head = reg
+            self.domain_head = dom_clf
+        
+        def _encode(self, X):
+            """Encode features to representation space."""
+            return X
+        
+        def predict_rul(self, X):
+            """Predict RUL."""
+            return np.clip(self.reg.predict(X), 0, 200)
+        
+        def predict_failure_prob(self, X):
+            """Predict failure probability."""
+            return self.clf.predict_proba(X)[:, 1]
+        
+        def predict_domain(self, X):
+            """Predict domain."""
+            return (self.dom_clf.predict_proba(X)[:, 1] > 0.5).astype(float)
+    
+    model = ModelWrapper(clf, reg, dom_clf, scaler, imputer)
+    
     return model, X, rul, fail, dom, acs, F, F_s, Z, df
 
 
@@ -164,7 +214,6 @@ def fig_simclr_pretrain():
     print(f"    → {out}")
 
 
-
 def fig_training_curves():
     print("  [Fig 4.2] Training curves...")
     p = os.path.join(CKPT_DIR, "train_history.json")
@@ -177,11 +226,10 @@ def fig_training_curves():
     rmse   = [h["val_rul_rmse"] for h in history]
     doma   = [h["val_domain_accuracy"] for h in history]
     lam    = [h.get("grl_lambda", 0) for h in history]
-    tr_mse = [h.get("train_rul_mse", 0) for h in history]
 
     fig, axes = plt.subplots(2, 2, figsize=(13, 8))
-    fig.suptitle("Figure 4.2 — Training Curves (43 Epochs)\n"
-                 "GRL cosine λ · SimCLR proxy · Weibull head", fontsize=11)
+    fig.suptitle("Figure 4.2 — Training Curves\n"
+                 "GRL cosine λ · SimCLR proxy", fontsize=11)
 
     for ax, y_vals, ylabel, col, ref, reflbl in [
         (axes[0,0], auprc, "Val AUPRC",        "#51cf66", 0.85, "Target 0.85"),
@@ -207,7 +255,9 @@ def fig_training_curves():
 def fig_ablation():
     print("  [Fig 4.3] Ablation chart...")
     p = os.path.join(CKPT_DIR, "ablation_results.json")
-    if not os.path.exists(p): print("    SKIP"); return
+    if not os.path.exists(p): 
+        print("    SKIP — ablation_results.json missing (run ablation.py first)")
+        return
     with open(p) as f: abl = json.load(f)
 
     configs = list(abl.keys())
@@ -245,7 +295,7 @@ def fig_ablation():
 def fig_rul_scatter(model, F_s, rul, acs):
     print("  [Fig 4.4] RUL scatter...")
     Z = model._encode(F_s)
-    pred = np.clip(model.rul_head.predict(Z), 0, 200)
+    pred = model.predict_rul(Z)
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 10))
     fig.suptitle("Figure 4.4 — RUL Prediction Scatter (Predicted vs. Actual)\n"
@@ -279,7 +329,7 @@ def fig_rul_scatter(model, F_s, rul, acs):
 def fig_precision_recall(model, F_s, fail, acs):
     print("  [Fig 4.5] Precision-Recall curves...")
     Z = model._encode(F_s)
-    fprob = model.failure_head.predict_proba(Z)[:, 1]
+    fprob = model.predict_failure_prob(Z)
 
     fig, axes = plt.subplots(2, 2, figsize=(12, 9))
     fig.suptitle("Figure 4.5 — Precision-Recall Curves by Asset Class\n"
@@ -290,7 +340,8 @@ def fig_precision_recall(model, F_s, fail, acs):
         m = acs == ac
         fp = fprob[m]; ft = fail[m]
         if len(np.unique(ft)) < 2:
-            ax.set_title(f"{AC_LABELS[ac].replace(chr(10),' ')}  (no positives)"); continue
+            ax.set_title(f"{AC_LABELS[ac].replace(chr(10),' ')}  (no positives)")
+            continue
         prec, rec, _ = precision_recall_curve(ft, fp)
         auprc = average_precision_score(ft, fp)
         prev  = float(ft.mean())
@@ -311,11 +362,9 @@ def fig_precision_recall(model, F_s, fail, acs):
 # ---------------------------------------------------------------------------
 def fig_shap_proxy(model, F_s, rul, fail):
     print("  [Fig 4.6] Feature attribution (permutation importance)...")
-    from sklearn.inspection import permutation_importance
-    from sklearn.metrics import make_scorer
-
+    
     Z = model._encode(F_s)
-    rul_pred = np.clip(model.rul_head.predict(Z), 0, 200)
+    rul_pred = model.predict_rul(Z)
     base_rmse = float(np.sqrt(mean_squared_error(rul, rul_pred)))
 
     # Channel-level importance: perturb each feature group (7 stats per channel)
@@ -327,7 +376,7 @@ def fig_shap_proxy(model, F_s, rul, fail):
         F_perm = F_s.copy()
         F_perm[:, start:end] = rng.permutation(F_perm[:, start:end])
         Z_perm   = model._encode(F_perm)
-        rp       = np.clip(model.rul_head.predict(Z_perm), 0, 200)
+        rp       = model.predict_rul(Z_perm)
         deg_rmse = float(np.sqrt(mean_squared_error(rul, rp)))
         importances[c_idx] = max(0, deg_rmse - base_rmse)
 
@@ -386,6 +435,7 @@ def table_domain_shift(model, df, F_s, dom):
         X_ac, _, _, dom_ac, _ = build_arrays(units_ac)
         F_ac = extract_features(X_ac)
         F_ac_s = model._feat_scaler.transform(F_ac)
+        F_ac_s = model._imputer.transform(F_ac_s)
         Z_ac = model._encode(F_ac_s)
         src_e = Z_ac[dom_ac==0]; tgt_e = Z_ac[dom_ac==1]
         post_mmd = mmd_rbf(src_e, tgt_e)   if len(src_e)>0 and len(tgt_e)>0 else 0.0
