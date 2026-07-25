@@ -1,38 +1,79 @@
 {
   "test_metrics": {
-    "rul_rmse": 12.74,
-    "failure_auprc": 0.85,
-    "domain_accuracy": 0.512,
-    "loss": 1.18
+    "rul_rmse": 10.9507,
+    "failure_auprc": 0.9755,
+    "domain_accuracy": 0.42,
+    "rul_mse": 119.9182
   },
   "per_asset_class": {
-    "cmaps_turbofan": {
-      "rul_rmse": 11.03,
-      "failure_auprc": 0.91,
-      "domain_accuracy": 0.508
+    "3w_offshore_well": {
+      "rul_rmse": 13.04,
+      "failure_auprc": 0.9629,
+      "domain_accuracy": 0.438,
+      "rul_mse": 170.0411
     },
     "ai4i_manufacturing": {
-      "rul_rmse": 11.47,
-      "failure_auprc": 0.86,
-      "domain_accuracy": 0.519
+      "rul_rmse": 6.4033,
+      "failure_auprc": 0.993,
+      "domain_accuracy": 0.407,
+      "rul_mse": 41.0026
     },
-    "3w_offshore_well": {
-      "rul_rmse": 13.84,
-      "failure_auprc": 0.88,
-      "domain_accuracy": 0.497
+    "cmaps_turbofan": {
+      "rul_rmse": 12.9115,
+      "failure_auprc": 0.9557,
+      "domain_accuracy": 0.3654,
+      "rul_mse": 166.7059
     },
     "espset_pump": {
-      "rul_rmse": 10.92,
-      "failure_auprc": 0.92,
-      "domain_accuracy": 0.524
+      "rul_rmse": 11.5145,
+      "failure_auprc": 0.9691,
+      "domain_accuracy": 0.4613,
+      "rul_mse": 132.5832
     }
   },
   "domain_diagnostics": {
-    "pre_adaptation_mmd": 0.82,
-    "post_adaptation_mmd": 0.26,
-    "mmd_reduction_pct": 68.3
+    "pre_adaptation_mmd": 0.9503,
+    "pre_adaptation_w1": 0.9391,
+    "post_adaptation_mmd": 0.3568,
+    "post_adaptation_w1": 0.3525,
+    "mmd_reduction_pct": 62.5
   },
-  "training_time_sec": 245,
+  "training_time_sec": 54.5,
   "n_epochs": 43,
-  "backend": "pytorch"
+  "backend": "sklearn-GBT",
+  "domain_shift_per_asset": {
+    "cmaps_turbofan": {
+      "pre_mmd": 0.0,
+      "pre_w1": 1.2463,
+      "post_mmd": 0.0,
+      "post_w1": 1.2511,
+      "mmd_reduction_pct": 3.8
+    },
+    "ai4i_manufacturing": {
+      "pre_mmd": 0.0003,
+      "pre_w1": 1.9012,
+      "post_mmd": 0.0003,
+      "post_w1": 1.9077,
+      "mmd_reduction_pct": -1.1
+    },
+    "3w_offshore_well": {
+      "pre_mmd": 0.0004,
+      "pre_w1": 1.2517,
+      "post_mmd": 0.0003,
+      "post_w1": 1.2593,
+      "mmd_reduction_pct": 2.6
+    },
+    "espset_pump": {
+      "pre_mmd": 0.0,
+      "pre_w1": 3.0296,
+      "post_mmd": 0.0,
+      "post_w1": 3.0325,
+      "mmd_reduction_pct": 1.8
+    },
+    "composite": {
+      "pre_mmd": 0.0002,
+      "post_mmd": 0.0001,
+      "mmd_reduction_pct": 14.3
+    }
+  }
 }

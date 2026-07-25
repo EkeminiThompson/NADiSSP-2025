@@ -42,19 +42,6 @@ Trials: 10,000  |  Horizon: 5 yr  |  Discount: 5%  |  λ_R=4.7  λ_N=2.8
 Simulation reproduces the dissertation's target NPV within 0.2% —
 within normal Monte Carlo variance for 10,000 trials.
 
-── SOBOL SENSITIVITY INDICES ────────────────────────────────────────
-
-  Parameter                             S1       ST
-  -------------------------------- -------  -------
-  reactive_lambda                    0.291    0.445
-  outage_duration                    0.258    0.391
-  nadissp_lambda                     0.172    0.263
-  daily_downtime_rate                0.025    0.080
-  capex                              0.006    0.004
-  parts_premium                      0.002    0.000
-  opex                              -0.000    0.000
-  labour_rate                        0.000    0.000
-
 ── METHODOLOGY ─────────────────────────────────────────────────────
 
   Daily downtime rate:  LogNormal(median=$8.4M/day, σ=0.185).

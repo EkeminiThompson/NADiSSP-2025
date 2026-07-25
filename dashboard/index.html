@@ -9,13 +9,20 @@
   --bg:#0f1419; --panel:#1a2230; --border:#2a3548; --text:#e6edf3;
   --muted:#8b98a9; --accent:#4dabf7; --green:#51cf66; --yellow:#ffd43b;
   --orange:#ff922b; --red:#ff6b6b; --purple:#cc5de8; --teal:#20c997;
+  --input-bg:#0d1521; --nav-bg:#1a2230;
+}
+[data-theme="light"] {
+  --bg:#f0f4f8; --panel:#ffffff; --border:#d0dae6; --text:#1a2332;
+  --muted:#5a6e82; --accent:#1b6ca8; --green:#1e7d3a; --yellow:#b07800;
+  --orange:#c05000; --red:#c0392b; --purple:#7b2fbe; --teal:#0e8c6a;
+  --input-bg:#f8fafc; --nav-bg:#ffffff;
 }
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
   background:var(--bg);color:var(--text);min-height:100vh}
 /* Layout */
 .layout{display:grid;grid-template-columns:200px 1fr;min-height:100vh}
-nav{background:var(--panel);border-right:1px solid var(--border);
+nav{background:var(--nav-bg);border-right:1px solid var(--border);
   padding:20px 0;position:sticky;top:0;height:100vh;overflow-y:auto}
 nav h1{font-size:13px;font-weight:700;color:var(--accent);padding:0 16px 16px;
   letter-spacing:.08em;text-transform:uppercase;border-bottom:1px solid var(--border)}
@@ -70,7 +77,7 @@ canvas{width:100%!important}
 .fig-card img{width:100%;display:block;background:#111}
 .fig-card .fig-label{padding:8px 12px;font-size:11px;color:var(--muted)}
 /* Forms */
-input,select,textarea{background:#0d1521;border:1px solid var(--border);
+input,select,textarea{background:var(--input-bg);border:1px solid var(--border);
   border-radius:6px;color:var(--text);padding:7px 10px;font-size:13px;width:100%}
 /* Buttons */
 .btn{background:var(--accent);color:#06121f;border:none;border-radius:6px;
@@ -88,7 +95,7 @@ input,select,textarea{background:#0d1521;border:1px solid var(--border);
 .dot-green{background:var(--green)}.dot-yellow{background:var(--yellow)}
 .dot-red{background:var(--red)}.dot-grey{background:var(--muted)}
 /* Code */
-pre{background:#0d1521;border:1px solid var(--border);border-radius:6px;
+pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
   padding:12px;font-size:11px;overflow-x:auto;color:#a8b5c8;line-height:1.5}
 /* Alerts */
 .alert{padding:10px 14px;border-radius:6px;font-size:12px;margin-bottom:12px;
@@ -104,7 +111,12 @@ pre{background:#0d1521;border:1px solid var(--border);border-radius:6px;
 <div class="layout">
 <!-- SIDEBAR -->
 <nav>
-  <h1>NADiSSP</h1>
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 16px;border-bottom:1px solid var(--border)">
+    <span style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase">NADiSSP</span>
+    <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"
+      style="background:transparent;border:1px solid var(--border);border-radius:6px;
+             color:var(--muted);cursor:pointer;padding:4px 8px;font-size:14px;line-height:1">🌙</button>
+  </div>
   <div class="section">Overview</div>
   <a href="#" class="active" data-page="overview">📊 Dashboard</a>
   <a href="#" data-page="model">🧠 Model Status</a>
@@ -401,37 +413,174 @@ pre{background:#0d1521;border:1px solid var(--border);border-radius:6px;
 <!-- PREDICT -->
 <div class="page" id="page-predict">
   <div class="page-title">Live Inference</div>
-  <div class="page-sub">POST /predict · Real-time RUL + failure probability from sensor sequence</div>
-  <div class="grid g2">
-    <div class="panel">
-      <div class="panel-title">Asset Configuration</div>
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--muted)">Asset ID</label>
-        <input id="pred-id" value="UNIT_001" style="margin-top:4px">
+  <div class="page-sub">POST /predict · Real-time RUL + failure probability from real or simulated sensor data</div>
+
+  <!-- Input mode tabs -->
+  <div style="display:flex;gap:8px;margin-bottom:14px">
+    <button class="btn" id="tab-sim" onclick="switchPredTab('sim')">🎛 Simulated</button>
+    <button class="btn btn-sec" id="tab-manual" onclick="switchPredTab('manual')">✏️ Manual Sensors</button>
+    <button class="btn btn-sec" id="tab-csv" onclick="switchPredTab('csv')">📂 CSV Upload</button>
+    <button class="btn btn-sec" id="tab-json" onclick="switchPredTab('json')">{ } JSON Paste</button>
+  </div>
+
+  <!-- ── TAB: Simulated ───────────────────────────────────────────────── -->
+  <div id="pred-tab-sim">
+    <div class="grid g2">
+      <div class="panel">
+        <div class="panel-title">Asset Configuration</div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:12px;color:var(--muted)">Asset ID</label>
+          <input id="pred-id" value="UNIT_001" style="margin-top:4px">
+        </div>
+        <div style="margin-bottom:10px">
+          <label style="font-size:12px;color:var(--muted)">Asset Class</label>
+          <select id="pred-class" style="margin-top:4px">
+            <option value="espset_pump">ESPset — Electric Submersible Pump</option>
+            <option value="cmaps_turbofan">CMAPSS — Gas Turbine</option>
+            <option value="3w_offshore_well">3W — Offshore Well</option>
+            <option value="ai4i_manufacturing">AI4I — Manufacturing</option>
+          </select>
+        </div>
+        <div style="margin-bottom:14px">
+          <label style="font-size:12px;color:var(--muted)">Simulated Degradation Level</label>
+          <input type="range" id="pred-degrad" min="0" max="100" value="40"
+            oninput="document.getElementById('degrad-val').textContent=this.value+'%'"
+            style="width:100%;margin-top:6px;accent-color:var(--accent)">
+          <span id="degrad-val" style="font-size:12px;color:var(--muted)">40%</span>
+          <div style="font-size:11px;color:var(--muted);margin-top:6px">
+            Dashboard generates synthetic sensor readings from this degradation level.
+            Pressure drops, vibration rises, temperature increases as degradation increases.
+          </div>
+        </div>
+        <button class="btn" onclick="runPredict()" id="pred-btn">⚡ Run Inference</button>
       </div>
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--muted)">Asset Class</label>
-        <select id="pred-class" style="margin-top:4px">
-          <option value="espset_pump">ESPset — Electric Submersible Pump</option>
-          <option value="cmaps_turbofan">CMAPSS — Gas Turbine</option>
-          <option value="3w_offshore_well">3W — Offshore Well</option>
-          <option value="ai4i_manufacturing">AI4I — Manufacturing</option>
-        </select>
+      <div class="panel" id="pred-result">
+        <div class="panel-title">Result</div>
+        <div style="color:var(--muted);font-size:13px">Click Run Inference to see results.</div>
       </div>
-      <div style="margin-bottom:10px">
-        <label style="font-size:12px;color:var(--muted)">Simulated Degradation Level</label>
-        <input type="range" id="pred-degrad" min="0" max="100" value="40"
-          oninput="document.getElementById('degrad-val').textContent=this.value+'%'"
-          style="width:100%;margin-top:6px;accent-color:var(--accent)">
-        <span id="degrad-val" style="font-size:12px;color:var(--muted)">40%</span>
-      </div>
-      <button class="btn" onclick="runPredict()" id="pred-btn">⚡ Run Inference</button>
-    </div>
-    <div class="panel" id="pred-result">
-      <div class="panel-title">Result</div>
-      <div style="color:var(--muted);font-size:13px">Click Run Inference to see results.</div>
     </div>
   </div>
+
+  <!-- ── TAB: Manual Sensors ─────────────────────────────────────────── -->
+  <div id="pred-tab-manual" style="display:none">
+    <div class="grid g2">
+      <div class="panel">
+        <div class="panel-title">Real Sensor Readings (single snapshot → 50-step window)</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+          Enter the current sensor readings for your equipment. Values are normalised (0–1 scale).
+          The model will replicate this snapshot across 50 timesteps with small noise.
+        </div>
+        <div style="margin-bottom:8px">
+          <label style="font-size:12px;color:var(--muted)">Asset ID</label>
+          <input id="man-id" value="FIELD_UNIT_001" style="margin-top:4px">
+        </div>
+        <div style="margin-bottom:8px">
+          <label style="font-size:12px;color:var(--muted)">Asset Class</label>
+          <select id="man-class" style="margin-top:4px">
+            <option value="espset_pump">ESPset — Electric Submersible Pump</option>
+            <option value="cmaps_turbofan">CMAPSS — Gas Turbine</option>
+            <option value="3w_offshore_well">3W — Offshore Well</option>
+            <option value="ai4i_manufacturing">AI4I — Manufacturing</option>
+          </select>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:8px">
+          <div><label style="font-size:11px;color:var(--muted)">Pressure 1 (0–1)</label>
+            <input type="number" id="s-pressure_1" min="0" max="1.5" step="0.01" value="0.65" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Pressure 2 (0–1)</label>
+            <input type="number" id="s-pressure_2" min="0" max="1.5" step="0.01" value="0.60" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Vibration X (0–1)</label>
+            <input type="number" id="s-vibration_x" min="0" max="1.5" step="0.01" value="0.35" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Vibration Y (0–1)</label>
+            <input type="number" id="s-vibration_y" min="0" max="1.5" step="0.01" value="0.32" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Temperature 1 (0–1)</label>
+            <input type="number" id="s-temperature_1" min="0" max="1.5" step="0.01" value="0.45" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Temperature 2 (0–1)</label>
+            <input type="number" id="s-temperature_2" min="0" max="1.5" step="0.01" value="0.48" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Motor Current (0–1)</label>
+            <input type="number" id="s-motor_current" min="0" max="1.5" step="0.01" value="0.52" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Frequency (0–1)</label>
+            <input type="number" id="s-frequency" min="0" max="1.5" step="0.01" value="0.58" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Torque (0–1)</label>
+            <input type="number" id="s-torque" min="0" max="1.5" step="0.01" value="0.55" style="margin-top:2px"></div>
+          <div><label style="font-size:11px;color:var(--muted)">Rotational Speed (0–1)</label>
+            <input type="number" id="s-rotational_speed" min="0" max="1.5" step="0.01" value="0.68" style="margin-top:2px"></div>
+        </div>
+        <button class="btn" onclick="runManualPredict()" style="margin-top:14px">⚡ Run Inference</button>
+      </div>
+      <div class="panel" id="pred-result-manual">
+        <div class="panel-title">Result</div>
+        <div style="color:var(--muted);font-size:13px">Enter sensor readings and click Run Inference.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: CSV Upload ──────────────────────────────────────────────── -->
+  <div id="pred-tab-csv" style="display:none">
+    <div class="grid g2">
+      <div class="panel">
+        <div class="panel-title">CSV File Upload</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:12px">
+          Upload a CSV with columns: <code>pressure_1, pressure_2, vibration_x, vibration_y,
+          temperature_1, temperature_2, motor_current, frequency, torque, rotational_speed</code>.
+          Each row = one timestep. The last 50 rows are used. Values should be normalised 0–1.
+        </div>
+        <div style="margin-bottom:8px">
+          <label style="font-size:12px;color:var(--muted)">Asset ID</label>
+          <input id="csv-id" value="CSV_UNIT_001" style="margin-top:4px">
+        </div>
+        <div style="margin-bottom:8px">
+          <label style="font-size:12px;color:var(--muted)">Asset Class</label>
+          <select id="csv-class" style="margin-top:4px">
+            <option value="espset_pump">ESPset — Electric Submersible Pump</option>
+            <option value="cmaps_turbofan">CMAPSS — Gas Turbine</option>
+            <option value="3w_offshore_well">3W — Offshore Well</option>
+            <option value="ai4i_manufacturing">AI4I — Manufacturing</option>
+          </select>
+        </div>
+        <div style="margin-bottom:12px">
+          <label style="font-size:12px;color:var(--muted)">Upload CSV</label>
+          <input type="file" id="csv-file" accept=".csv" style="margin-top:4px"
+            onchange="previewCSV(this)">
+        </div>
+        <div id="csv-preview" style="font-size:11px;color:var(--muted);margin-bottom:10px"></div>
+        <button class="btn" onclick="runCSVPredict()" id="csv-btn" disabled>⚡ Run Inference</button>
+        <button class="btn btn-sec" onclick="downloadSampleCSV()" style="margin-left:8px">⬇ Sample CSV</button>
+      </div>
+      <div class="panel" id="pred-result-csv">
+        <div class="panel-title">Result</div>
+        <div style="color:var(--muted);font-size:13px">Upload a CSV file and click Run Inference.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TAB: JSON Paste ──────────────────────────────────────────────── -->
+  <div id="pred-tab-json" style="display:none">
+    <div class="grid g2">
+      <div class="panel">
+        <div class="panel-title">Paste Raw JSON Payload</div>
+        <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+          Paste a complete /predict payload. Must include <code>asset_id</code>,
+          <code>asset_class</code>, and <code>sequence</code> (array of 50 objects).
+        </div>
+        <textarea id="json-payload" rows="14" style="font-family:monospace;font-size:11px;margin-bottom:10px"
+>{
+  "asset_id": "JSON_UNIT_001",
+  "asset_class": "espset_pump",
+  "sequence": []
+}</textarea>
+        <div style="display:flex;gap:8px">
+          <button class="btn" onclick="runJSONPredict()">⚡ Run Inference</button>
+          <button class="btn btn-sec" onclick="loadExampleJSON()">Load Example</button>
+        </div>
+      </div>
+      <div class="panel" id="pred-result-json">
+        <div class="panel-title">Result</div>
+        <div style="color:var(--muted);font-size:13px">Paste a valid JSON payload and click Run Inference.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Latency monitor (shared) -->
   <div class="panel" style="margin-top:14px">
     <div class="panel-title">Latency Monitor (rolling 50 calls)</div>
     <canvas id="canvas-lat" height="120"></canvas>
@@ -748,48 +897,30 @@ async function loadPerformance() {
 
 /* ── Ablation page ────────────────────────────────────────────────────── */
 async function loadAblation() {
-  let abl = await get('/metrics/ablation');
-  
-  if (!abl) {
-    try {
-      const res = await fetch('ablation_results.json');
-      abl = await res.json();
-    } catch(e) {
-      console.error("Could not load ablation data", e);
-      return;
-    }
-  }
-
+  const abl = await get('/metrics/ablation');
   if(!abl) return;
+  const configs = Object.keys(abl);
+  const shortNames = ['Full\n(GRL+SimCLR)','GRL only\n(−SimCLR)','SimCLR only\n(−GRL)','Neither\n(Baseline)'];
+  const auprcs = configs.map(c=>abl[c].failure_auprc||0);
+  const rmses  = configs.map(c=>abl[c].rul_rmse||0);
+  const cols   = ['#51cf66','#ffd43b','#ff922b','#8b98a9'];
 
-  // Explicit mapping to avoid order issues
-  const orderedConfigs = ["full_model", "GRL_only", "SimCLR_only", "neither"];
-  const shortNames = [
-    "Full (GRL+SimCLR)", 
-    "GRL only (−SimCLR)", 
-    "SimCLR only (−GRL)", 
-    "Neither (Baseline)"
-  ];
+  drawBarChart('canvas-abl-auprc', shortNames,
+    [{data:auprcs,color:'#51cf66',label:'AUPRC'}], {yMax:1.0});
+  drawBarChart('canvas-abl-rmse', shortNames,
+    [{data:rmses, color:'#4dabf7',label:'RMSE'}]);
 
-  const auprcs = orderedConfigs.map(key => abl[key]?.failure_auprc || 0);
-  const rmses  = orderedConfigs.map(key => abl[key]?.rul_rmse || 0);
-
-  drawBarChart('canvas-abl-auprc', shortNames, [{data:auprcs, color:'#51cf66', label:'AUPRC'}], {yMax:1.0});
-  drawBarChart('canvas-abl-rmse', shortNames, [{data:rmses, color:'#4dabf7', label:'RMSE'}]);
-
-  const full_auprc = abl.full_model?.failure_auprc || 0;
+  const full_auprc = abl[configs[0]]?.failure_auprc||0;
   const tbody = document.getElementById('abl-table-body');
-  
-  tbody.innerHTML = orderedConfigs.map((key, i) => {
-    const m = abl[key] || {};
-    const delta = (m.failure_auprc || 0) - full_auprc;
-    const cls = delta < -0.05 ? 'badge-red' : (delta < 0 ? 'badge-yellow' : 'badge-green');
+  tbody.innerHTML = configs.map((c,i)=>{
+    const m=abl[c]; const delta=m.failure_auprc-full_auprc;
+    const cls=delta<-0.05?'badge-red':delta<0?'badge-yellow':'badge-green';
     return `<tr>
-      <td>${shortNames[i]}</td>
+      <td>${shortNames[i].replace('\n',' ')}</td>
       <td><span class="badge ${cls}">${fmt(m.failure_auprc,3)}</span></td>
       <td>${fmt(m.rul_rmse,3)}</td>
       <td>${fmt(m.domain_accuracy,3)}</td>
-      <td><span class="badge ${i===0 ? 'badge-blue' : (delta<0 ? 'badge-red' : 'badge-yellow')}">${i===0 ? '—' : fmt(delta,3)}</span></td>
+      <td><span class="badge ${i===0?'badge-blue':delta<0?'badge-red':'badge-yellow'}">${i===0?'—':fmt(delta,3)}</span></td>
     </tr>`;
   }).join('');
 }
@@ -822,7 +953,7 @@ async function triggerEval() {
   s.textContent='Starting…'; s.style.color='var(--yellow)';
   await post('/run/evaluate');
   s.textContent='Running (may take 2–5 min). Refresh when done.';
-  pollStatus('evaluate.py', s, ()=>{refreshFigures();s.style.color='var(--green)';});
+  pollStatus('evaluate', s, ()=>{refreshFigures();s.style.color='var(--green)';});
 }
 
 /* ── TCO page ─────────────────────────────────────────────────────────── */
@@ -956,35 +1087,18 @@ async function runPredict() {
     return;
   }
 
-  const riskCls = {critical:'badge-red',elevated:'badge-yellow',watch:'badge-blue',normal:'badge-green'};
-  div.innerHTML = `<div class="panel-title">Prediction · ${res.latency_ms}ms</div>
-    <table>
-      <tr><td>Asset ID</td><td><strong>${res.asset_id}</strong></td></tr>
-      <tr><td>RUL Estimate</td><td><strong class="accent">${res.rul_estimate} ${res.rul_unit}</strong></td></tr>
-      <tr><td>Failure Probability</td><td><strong>${(res.failure_probability*100).toFixed(1)}%</strong></td></tr>
-      <tr><td>Risk Level</td><td><span class="badge ${riskCls[res.risk_level]||'badge-grey'}">${res.risk_level}</span></td></tr>
-      <tr><td>Weibull Scale λ</td><td>${res.weibull_scale}</td></tr>
-      <tr><td>Weibull Shape k</td><td>${res.weibull_shape}</td></tr>
-      <tr><td>Inference Latency</td><td>${res.latency_ms} ms <span class="badge ${res.latency_ms<120?'badge-green':'badge-red'}">${res.latency_ms<120?'✓ <120ms':'✗ >120ms'}</span></td></tr>
-    </table>`;
-
-  latHistory.push(res.latency_ms);
-  if(latHistory.length>50) latHistory.shift();
-  drawLineChart('canvas-lat', latHistory.map((_,i)=>String(i+1)),
-    [{data:latHistory, color:'#4dabf7', label:'Latency (ms)', width:2}],
-    {yMin:0, refLines:[{value:120,color:'#ff6b6b',label:'120ms target'}]});
+  renderResult(res, 'pred-result');
 }
 
 /* ── Run scripts page ─────────────────────────────────────────────────── */
 const scriptMap = {
-  generate: '/run/generate',  // or direct subprocess via backend
+  generate: '/run/generate',
   train:    '/run/train',
   ablation: '/run/ablation',
   evaluate: '/run/evaluate',
   tco:      '/run/tco',
   network:  '/run/network-test',
 };
-
 const statusMap = {
   generate: 'generate',
   train:    'train',
@@ -993,14 +1107,15 @@ const statusMap = {
   tco:      'tco_simulation',
   network:  'network_test',
 };
+
 async function runScript(name) {
   const endpoint = scriptMap[name];
   const scriptFile = statusMap[name];
-  document.getElementById('script-status').textContent = `Running ${scriptFile}…`;
+  document.getElementById('script-status').textContent = `Running ${name}…`;
   document.getElementById('script-output').textContent = 'Starting…';
   if(endpoint) {
     await post(endpoint);
-    pollStatus(scriptFile, null, null, true);
+    pollStatus(name, null, null, true);
   }
 }
 
@@ -1097,6 +1212,207 @@ document.querySelectorAll('nav a[data-page]').forEach(a=>{
 
 // Initial load
 loadOverview();
+
+/* ── Theme toggle ─────────────────────────────────────────────────── */
+function toggleTheme() {
+  const root = document.documentElement;
+  const btn  = document.getElementById('theme-toggle');
+  if (root.getAttribute('data-theme') === 'light') {
+    root.removeAttribute('data-theme');
+    btn.textContent = '🌙';
+    localStorage.setItem('nadissp-theme', 'dark');
+  } else {
+    root.setAttribute('data-theme', 'light');
+    btn.textContent = '☀️';
+    localStorage.setItem('nadissp-theme', 'light');
+  }
+}
+// Restore saved theme on load
+(function() {
+  const saved = localStorage.getItem('nadissp-theme');
+  if (saved === 'light') {
+    document.documentElement.setAttribute('data-theme', 'light');
+    const btn = document.getElementById('theme-toggle');
+    if (btn) btn.textContent = '☀️';
+  }
+})();
+
+/* ── Predict tab switching ────────────────────────────────────────── */
+function switchPredTab(tab) {
+  ['sim','manual','csv','json'].forEach(t => {
+    document.getElementById('pred-tab-' + t).style.display = t === tab ? '' : 'none';
+    const btn = document.getElementById('tab-' + t);
+    btn.className = t === tab ? 'btn' : 'btn btn-sec';
+  });
+}
+
+/* ── Shared result renderer ───────────────────────────────────────── */
+const CHANNELS_ORDER = ['pressure_1','pressure_2','vibration_x','vibration_y',
+  'temperature_1','temperature_2','motor_current','frequency','torque','rotational_speed'];
+
+function renderResult(res, targetId) {
+  const div = document.getElementById(targetId);
+  if (!res || res.error) {
+    div.innerHTML = '<div class="panel-title">Result</div><div style="color:var(--red)">' +
+      (res ? res.error : 'API error — is model loaded?') + '</div>';
+    return;
+  }
+  const riskCls = {critical:'badge-red', elevated:'badge-yellow', watch:'badge-blue', normal:'badge-green'};
+  const riskIcon = {critical:'🔴', elevated:'🟡', watch:'🔵', normal:'🟢'};
+  div.innerHTML = `
+    <div class="panel-title">Prediction · ${res.latency_ms}ms</div>
+    <table>
+      <tr><td>Asset ID</td><td><strong>${res.asset_id}</strong></td></tr>
+      <tr><td>RUL Estimate</td><td><strong class="accent">${res.rul_estimate} ${res.rul_unit}</strong></td></tr>
+      <tr><td>Failure Probability</td><td><strong>${(res.failure_probability*100).toFixed(1)}%</strong>
+        <div class="bar-wrap" style="margin-top:4px;width:120px;display:inline-block;vertical-align:middle;margin-left:8px">
+          <div class="bar-fill" style="width:${(res.failure_probability*100).toFixed(0)}%;background:${
+            res.failure_probability>=0.7?'var(--red)':res.failure_probability>=0.4?'var(--yellow)':'var(--green)'}"></div>
+        </div></td></tr>
+      <tr><td>Risk Level</td><td>${riskIcon[res.risk_level]||''} <span class="badge ${riskCls[res.risk_level]||'badge-grey'}">${res.risk_level}</span></td></tr>
+      <tr><td>Weibull Scale λ</td><td>${res.weibull_scale}</td></tr>
+      <tr><td>Weibull Shape k</td><td>${res.weibull_shape} <span style="font-size:10px;color:var(--muted)">(β>1 → wear-out regime)</span></td></tr>
+      <tr><td>Inference Latency</td><td>${res.latency_ms} ms <span class="badge ${res.latency_ms<120?'badge-green':'badge-red'}">${res.latency_ms<120?'✓ <120ms':'✗ >120ms'}</span></td></tr>
+    </table>`;
+  latHistory.push(res.latency_ms);
+  if (latHistory.length > 50) latHistory.shift();
+  drawLineChart('canvas-lat', latHistory.map((_,i)=>String(i+1)),
+    [{data:latHistory, color:'#4dabf7', label:'Latency (ms)', width:2}],
+    {yMin:0, refLines:[{value:120, color:'#ff6b6b', label:'120ms target'}]});
+}
+
+/* ── Manual sensor predict ────────────────────────────────────────── */
+async function runManualPredict() {
+  const reading = {};
+  CHANNELS_ORDER.forEach(c => {
+    reading[c] = parseFloat(document.getElementById('s-' + c).value) || 0;
+  });
+  // Replicate snapshot across 50 timesteps with tiny noise
+  const sequence = Array.from({length:50}, (_, t) => {
+    const obj = {};
+    CHANNELS_ORDER.forEach(c => {
+      obj[c] = reading[c] + (Math.random() - 0.5) * 0.008;
+    });
+    return obj;
+  });
+  const payload = {
+    asset_id:    document.getElementById('man-id').value,
+    asset_class: document.getElementById('man-class').value,
+    sequence,
+  };
+  const res = await post('/predict', payload);
+  renderResult(res, 'pred-result-manual');
+}
+
+/* ── CSV predict ──────────────────────────────────────────────────── */
+let _csvSequence = null;
+
+function previewCSV(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    const lines = e.target.result.trim().split('\n').filter(l => l.trim());
+    const header = lines[0].split(',').map(h => h.trim().toLowerCase());
+    const rows = lines.slice(1).map(l => {
+      const vals = l.split(',');
+      const obj = {};
+      header.forEach((h, i) => { obj[h] = parseFloat(vals[i]) || 0; });
+      return obj;
+    });
+    // Use last 50 rows
+    _csvSequence = rows.slice(-50);
+    const missing = CHANNELS_ORDER.filter(c => !header.includes(c));
+    const preview = document.getElementById('csv-preview');
+    if (missing.length) {
+      preview.innerHTML = `<span style="color:var(--red)">⚠ Missing columns: ${missing.join(', ')}</span>`;
+      document.getElementById('csv-btn').disabled = true;
+    } else {
+      preview.innerHTML = `✓ ${rows.length} rows loaded · using last ${_csvSequence.length} timesteps`;
+      preview.style.color = 'var(--green)';
+      document.getElementById('csv-btn').disabled = false;
+    }
+  };
+  reader.readAsText(file);
+}
+
+async function runCSVPredict() {
+  if (!_csvSequence) return;
+  // Pad to 50 if shorter
+  let seq = _csvSequence;
+  if (seq.length < 50) {
+    const pad = Array.from({length: 50 - seq.length}, () => ({...seq[0]}));
+    seq = [...pad, ...seq];
+  }
+  const payload = {
+    asset_id:    document.getElementById('csv-id').value,
+    asset_class: document.getElementById('csv-class').value,
+    sequence:    seq,
+  };
+  const res = await post('/predict', payload);
+  renderResult(res, 'pred-result-csv');
+}
+
+function downloadSampleCSV() {
+  const header = CHANNELS_ORDER.join(',');
+  const rows = Array.from({length:50}, (_, t) => {
+    const d = t / 49;
+    return [
+      (0.70 - 0.30*d + (Math.random()-0.5)*0.02).toFixed(4),
+      (0.65 - 0.25*d + (Math.random()-0.5)*0.02).toFixed(4),
+      (0.30 + 0.50*Math.pow(d,1.5) + (Math.random()-0.5)*0.03).toFixed(4),
+      (0.28 + 0.45*Math.pow(d,1.5) + (Math.random()-0.5)*0.03).toFixed(4),
+      (0.40 + 0.30*d + (Math.random()-0.5)*0.015).toFixed(4),
+      (0.45 + 0.28*d + (Math.random()-0.5)*0.015).toFixed(4),
+      (0.50 + 0.25*d + (Math.random()-0.5)*0.02).toFixed(4),
+      (0.60 - 0.10*d + (Math.random()-0.5)*0.01).toFixed(4),
+      (0.55 + 0.20*d + (Math.random()-0.5)*0.02).toFixed(4),
+      (0.70 - 0.15*d + (Math.random()-0.5)*0.01).toFixed(4),
+    ].join(',');
+  });
+  const csv = [header, ...rows].join('\n');
+  const blob = new Blob([csv], {type:'text/csv'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'nadissp_sample_input.csv';
+  a.click();
+}
+
+/* ── JSON predict ─────────────────────────────────────────────────── */
+async function loadExampleJSON() {
+  const seq = Array.from({length:50}, (_, t) => {
+    const d = (t/49) * 0.6;
+    return {
+      pressure_1:      parseFloat((0.70 - 0.30*d).toFixed(4)),
+      pressure_2:      parseFloat((0.65 - 0.25*d).toFixed(4)),
+      vibration_x:     parseFloat((0.30 + 0.50*Math.pow(d,1.5)).toFixed(4)),
+      vibration_y:     parseFloat((0.28 + 0.45*Math.pow(d,1.5)).toFixed(4)),
+      temperature_1:   parseFloat((0.40 + 0.30*d).toFixed(4)),
+      temperature_2:   parseFloat((0.45 + 0.28*d).toFixed(4)),
+      motor_current:   parseFloat((0.50 + 0.25*d).toFixed(4)),
+      frequency:       parseFloat((0.60 - 0.10*d).toFixed(4)),
+      torque:          parseFloat((0.55 + 0.20*d).toFixed(4)),
+      rotational_speed:parseFloat((0.70 - 0.15*d).toFixed(4)),
+    };
+  });
+  document.getElementById('json-payload').value = JSON.stringify(
+    {asset_id:'JSON_UNIT_001', asset_class:'espset_pump', sequence:seq}, null, 2);
+}
+
+async function runJSONPredict() {
+  let payload;
+  try {
+    payload = JSON.parse(document.getElementById('json-payload').value);
+  } catch(e) {
+    document.getElementById('pred-result-json').innerHTML =
+      '<div class="panel-title">Result</div><div style="color:var(--red)">Invalid JSON: ' + e.message + '</div>';
+    return;
+  }
+  const res = await post('/predict', payload);
+  renderResult(res, 'pred-result-json');
+}
+
+
 </script>
 </body>
 </html>

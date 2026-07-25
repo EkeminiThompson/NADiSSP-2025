@@ -1,52 +1,52 @@
 [
   {
     "rank": 1,
-    "channel": "temperature_2",
-    "attribution_pct": 31.13
+    "channel": "pressure_1",
+    "attribution_pct": 23.8
   },
   {
     "rank": 2,
-    "channel": "pressure_1",
-    "attribution_pct": 20.82
+    "channel": "pressure_2",
+    "attribution_pct": 20.95
   },
   {
     "rank": 3,
-    "channel": "pressure_2",
-    "attribution_pct": 17.12
+    "channel": "temperature_1",
+    "attribution_pct": 14.91
   },
   {
     "rank": 4,
-    "channel": "temperature_1",
-    "attribution_pct": 8.64
+    "channel": "vibration_x",
+    "attribution_pct": 11.02
   },
   {
     "rank": 5,
-    "channel": "vibration_x",
-    "attribution_pct": 8.04
+    "channel": "torque",
+    "attribution_pct": 10.09
   },
   {
     "rank": 6,
-    "channel": "motor_current",
-    "attribution_pct": 7.8
+    "channel": "temperature_2",
+    "attribution_pct": 7.22
   },
   {
     "rank": 7,
-    "channel": "torque",
-    "attribution_pct": 5.07
+    "channel": "motor_current",
+    "attribution_pct": 5.51
   },
   {
     "rank": 8,
     "channel": "rotational_speed",
-    "attribution_pct": 1.39
+    "attribution_pct": 3.57
   },
   {
     "rank": 9,
-    "channel": "frequency",
-    "attribution_pct": 0.0
+    "channel": "vibration_y",
+    "attribution_pct": 1.64
   },
   {
     "rank": 10,
-    "channel": "vibration_y",
-    "attribution_pct": 0.0
+    "channel": "frequency",
+    "attribution_pct": 1.29
   }
 ]

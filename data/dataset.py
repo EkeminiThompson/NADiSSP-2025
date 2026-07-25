@@ -1,3 +1,10 @@
+"""
+NADiSSP Dataset Utilities
+==========================
+Converts the row-level CSV dataset into per-unit sequence arrays.
+No PyTorch dependency — pure numpy/pandas.
+"""
+
 import numpy as np
 import pandas as pd
 
@@ -8,38 +15,47 @@ CHANNELS = [
     "motor_current", "frequency",
     "torque", "rotational_speed",
 ]
-
-SEQ_LEN = 50   # ← This was missing
+SEQ_LEN = 50
 
 
 def load_units(df: pd.DataFrame):
-    """Group by unit_id into list of sequences."""
+    """
+    Group df by unit_id, sort by timestep, return list of dicts:
+      {x: (seq_len, n_ch), rul: float, failure: float, domain: float, asset_class: str}
+    """
     units = []
-    for uid, group in df.groupby('unit_id'):
-        group = group.sort_values('timestep')
-        seq = group[CHANNELS].fillna(0).values.astype(np.float32)
-        
-        # Ensure fixed length
-        if len(seq) < SEQ_LEN:
-            pad = np.tile(seq[-1:], (SEQ_LEN - len(seq), 1))
-            seq = np.vstack([seq, pad])
+    for uid, g in df.groupby("unit_id", sort=False):
+        g = g.sort_values("timestep")
+        x = g[CHANNELS].fillna(0).values.astype(np.float32)
+        # Pad / truncate to SEQ_LEN
+        if len(x) < SEQ_LEN:
+            pad = np.repeat(x[-1:], SEQ_LEN - len(x), axis=0)
+            x = np.vstack([x, pad])
         else:
-            seq = seq[-SEQ_LEN:]
-            
-        rul = float(group['rul'].iloc[-1])
-        fail = float(group['failure_near_term'].iloc[-1])
-        dom = float(group['domain_label'].iloc[0])
-        ac = group['asset_class'].iloc[0]
-        
-        units.append((seq, rul, fail, dom, ac))
+            x = x[-SEQ_LEN:]
+        units.append({
+            "x":           x,
+            "rul":         float(g["rul"].iloc[-1]),
+            "failure":     float(g["failure_near_term"].iloc[-1]),
+            "domain":      float(g["domain_label"].iloc[0]),
+            "asset_class": g["asset_class"].iloc[0],
+            "unit_id":     uid,
+        })
     return units
 
 
 def build_arrays(units):
-    """Convert to arrays for training."""
-    X = np.array([u[0] for u in units], dtype=np.float32)
-    rul = np.array([u[1] for u in units], dtype=np.float32)
-    fail = np.array([u[2] for u in units], dtype=np.float32)
-    dom = np.array([u[3] for u in units], dtype=np.float32)
-    ac = np.array([u[4] for u in units])
-    return X, rul, fail, dom, ac
+    """Stack unit list into flat arrays for sklearn."""
+    X   = np.stack([u["x"] for u in units])           # (n, seq_len, n_ch)
+    rul = np.array([u["rul"] for u in units])
+    fail= np.array([u["failure"] for u in units])
+    dom = np.array([u["domain"] for u in units])
+    acs = np.array([u["asset_class"] for u in units])
+    return X, rul, fail, dom, acs
+
+
+def jitter_augment(X: np.ndarray, sigma: float = 0.05, rng=None) -> np.ndarray:
+    """Additive Gaussian jitter for SimCLR pairs."""
+    if rng is None:
+        rng = np.random.default_rng()
+    return X + rng.normal(0, sigma, X.shape).astype(np.float32)

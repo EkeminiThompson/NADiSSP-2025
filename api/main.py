@@ -2,6 +2,30 @@
 NADiSSP Inference API (Flask)
 ==============================
 Full Flask API replacing FastAPI for environments without FastAPI.
+
+Endpoints:
+  GET  /                          — dashboard SPA
+  GET  /health                    — liveness + model info
+  POST /predict                   — single-unit inference
+  POST /predict/batch             — batch inference
+  GET  /metrics                   — training metrics
+  GET  /metrics/latency           — rolling latency stats
+  GET  /metrics/history           — per-epoch training history
+  GET  /metrics/ablation          — ablation results
+  GET  /results                   — all results index
+  GET  /results/figures           — list generated figures
+  GET  /results/figure/<name>     — serve PNG figure
+  GET  /results/tco               — TCO/NPV results
+  GET  /results/network           — network test results
+  GET  /results/domain            — domain shift diagnostics
+  GET  /results/shap              — SHAP attribution table
+  POST /run/train                 — trigger training
+  POST /run/evaluate              — trigger figure generation
+  POST /run/ablation              — trigger ablation
+  POST /run/tco                   — trigger TCO simulation
+  POST /run/network-test          — trigger network test
+  GET  /run/status/<script>       — poll background task status
+  GET  /docs                      — API documentation
 """
 
 from __future__ import annotations
@@ -10,10 +34,10 @@ from collections import deque
 
 import numpy as np
 from flask import Flask, request, jsonify, send_file, send_from_directory, abort
-import joblib
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from models.nadissp import extract_features, CHANNELS, SEQ_LEN, ModelWrapper
+from models.nadissp import NADiSSP, extract_features
+from data.dataset import CHANNELS, SEQ_LEN
 
 BASE_DIR      = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 CKPT_PATH     = os.path.join(BASE_DIR, "checkpoints", "nadissp_model.joblib")
@@ -35,36 +59,11 @@ _lock        = threading.Lock()
 
 
 def _load_model():
-    """Load the trained model from disk."""
     global _model
-    
     if not os.path.exists(CKPT_PATH):
-        print("⚠ Model not found. Run train.py first.")
         return False
-    
-    try:
-        # Load the model dictionary
-        model_dict = joblib.load(CKPT_PATH)
-        
-        # Extract components
-        clf = model_dict.get('clf')
-        reg = model_dict.get('reg')
-        dom_clf = model_dict.get('dom_clf')
-        scaler = model_dict.get('scaler')
-        imputer = model_dict.get('imputer')
-        
-        if None in (clf, reg, dom_clf, scaler, imputer):
-            print("⚠ Model components missing. Check model file.")
-            return False
-        
-        # Create wrapper
-        _model = ModelWrapper(clf, reg, dom_clf, scaler, imputer)
-        print(f"✓ Model loaded: features={scaler.n_features_in_ if hasattr(scaler, 'n_features_in_') else '?'}")
-        return True
-        
-    except Exception as e:
-        print(f"✗ Error loading model: {e}")
-        return False
+    _model = NADiSSP.load(CKPT_PATH)
+    return True
 
 
 # Load at startup
@@ -116,45 +115,35 @@ def _risk(p: float) -> str:
 
 
 def _prepare(sequence: list) -> np.ndarray:
-    """Prepare sequence with all required channels."""
-    # Create array with all channels
-    arr = np.zeros((len(sequence), len(CHANNELS)), dtype=np.float32)
-    for i, s in enumerate(sequence):
-        for j, ch in enumerate(CHANNELS):
-            arr[i, j] = s.get(ch, 0.0)
-    
-    # Pad or truncate to SEQ_LEN
+    arr = np.array([[s.get(c, 0.0) for c in CHANNELS]
+                    for s in sequence], dtype=np.float32)
     if len(arr) < SEQ_LEN:
-        if len(arr) > 0:
-            pad = np.repeat(arr[-1:], SEQ_LEN - len(arr), axis=0)
-        else:
-            pad = np.zeros((SEQ_LEN - len(arr), len(CHANNELS)))
+        pad = np.repeat(arr[-1:] if len(arr) else np.zeros((1,len(CHANNELS))),
+                        SEQ_LEN - len(arr), axis=0)
         arr = np.vstack([arr, pad])
-    elif len(arr) > SEQ_LEN:
-        arr = arr[-SEQ_LEN:]
-    
-    return arr
+    return arr[-SEQ_LEN:]
 
 
 def _infer_one(item: dict) -> dict:
     if _model is None:
         return {"error": "Model not loaded. Run scripts/train.py first."}
-    
     t0 = time.perf_counter()
-    x = _prepare(item.get("sequence", []))  # (SEQ_LEN, n_ch)
-    out = _model.predict(x[np.newaxis])     # batch dimension
+    x   = _prepare(item.get("sequence", []))           # (SEQ_LEN, n_ch)
+    F   = extract_features(x[np.newaxis])              # (1, n_feat)
+    F_s = _model._feat_scaler.transform(F)
+    out = _model.predict(x)
 
     lat = (time.perf_counter() - t0) * 1000.0
     _latency_log.append(lat)
 
     return {
         "asset_id":          item.get("asset_id", "unknown"),
-        "rul_estimate":      round(float(out["rul_pred"][0]), 2),
+        "rul_estimate":      round(float(out["rul_pred"]), 2),
         "rul_unit":          "cycles",
-        "failure_probability": round(float(out["failure_prob"][0]), 4),
-        "risk_level":        _risk(float(out["failure_prob"][0])),
-        "weibull_scale":     1.0,  # Placeholder
-        "weibull_shape":     1.0,  # Placeholder
+        "failure_probability": round(float(out["failure_prob"]), 4),
+        "risk_level":        _risk(float(out["failure_prob"])),
+        "weibull_scale":     round(float(np.exp(out["log_lambda"])), 3),
+        "weibull_shape":     round(float(np.exp(out["log_k"])), 3),
         "latency_ms":        round(lat, 3),
         "model_version":     "1.0.0-sklearn",
     }
@@ -261,8 +250,6 @@ def domain_results():
 @app.route("/results/simclr")
 def simclr_results():
     p = os.path.join(BASE_DIR, "checkpoints", "simclr_history.json")
-    if not os.path.exists(p):
-        return jsonify([])
     return jsonify(_load_json(p, "SimCLR pre-training history"))
 
 
@@ -387,8 +374,8 @@ def docs():
         {"method":"GET",  "path":"/results/network",     "description":"Network resilience results"},
         {"method":"GET",  "path":"/results/domain",      "description":"Domain shift diagnostics"},
         {"method":"GET",  "path":"/results/shap",        "description":"Feature attribution table"},
-        {"method":"GET",  "path":"/results/simclr",      "description":"SimCLR pre-training history"},
-        {"method":"POST", "path":"/run/pretrain",        "description":"Trigger SimCLR pre-training"},
+        {"method":"GET",  "path":"/results/simclr",      "description":"SimCLR pre-training history (NT-Xent curve, Contribution 2)"},
+        {"method":"POST", "path":"/run/pretrain",         "description":"Trigger SimCLR pre-training (Contribution 2, Stage 2)"},
         {"method":"POST", "path":"/run/train",           "description":"Trigger training pipeline"},
         {"method":"POST", "path":"/run/evaluate",        "description":"Trigger figure/table generation"},
         {"method":"POST", "path":"/run/ablation",        "description":"Trigger ablation study"},
