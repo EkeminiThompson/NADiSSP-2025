@@ -123,6 +123,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
   <div class="section">Chapter 4</div>
   <a href="#" data-page="simclr">🔁 SimCLR Pre-Train</a>
   <a href="#" data-page="domain">📐 Domain Shift</a>
+  <a href="#" data-page="heterogeneity">🏗 Heterogeneity</a>
   <a href="#" data-page="performance">🎯 Performance</a>
   <a href="#" data-page="ablation">🔬 Ablation Study</a>
   <a href="#" data-page="figures">📈 Figures</a>
@@ -248,6 +249,306 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
       <tr><td>Backend note</td><td>sklearn approximation of NT-Xent gradient (mean-teacher proxy). Full autograd version requires PyTorch — see models/nadissp_torch.py</td></tr>
       <tr><td>Stage handoff</td><td>Encoder weights automatically loaded by train.py (Stage 3) if checkpoint exists</td></tr>
     </table>
+  </div>
+</div>
+
+<!-- HETEROGENEITY -->
+<div class="page" id="page-heterogeneity">
+  <div class="page-title">Asset Heterogeneity — The Core Problem</div>
+  <div class="page-sub">Chapter 1.2 / 3.1 · Why a single global PdM model fails across Nigerian oil &amp; gas assets</div>
+
+  <div class="alert alert-info" style="margin-bottom:14px">
+    <strong>Definition:</strong> Heterogeneity means the four asset classes differ in physics, sensor profiles,
+    failure modes, degradation timescales, and Nigerian environmental exposure — so a model trained on one
+    cannot transfer to another without domain adaptation. NADiSSP is validated across all four simultaneously.
+  </div>
+
+  <!-- Four asset class cards -->
+  <div class="grid g4" style="margin-bottom:14px">
+    <div class="panel" style="border-top:3px solid var(--accent)">
+      <div class="panel-title">CMAPSS — Gas Turbine</div>
+      <div class="kpi-val accent" style="font-size:18px;margin-bottom:8px">Turbofan</div>
+      <table>
+        <tr><td style="color:var(--muted);font-size:11px">RUL range</td><td style="font-size:11px"><strong>40–130 cycles</strong></td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Failure time</td><td style="font-size:11px">Slow / monotone</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Key sensors</td><td style="font-size:11px">pressure, temperature, speed</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Dominant failure</td><td style="font-size:11px">Blade wear, seal leak</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Nigerian exposure</td><td style="font-size:11px">Humidity drift, sampling mismatch</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Source units</td><td style="font-size:11px">840 (clean)</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Target units</td><td style="font-size:11px">560 (augmented)</td></tr>
+      </table>
+    </div>
+    <div class="panel" style="border-top:3px solid var(--green)">
+      <div class="panel-title">AI4I — Process Equipment</div>
+      <div class="kpi-val green" style="font-size:18px;margin-bottom:8px">Petrochemical</div>
+      <table>
+        <tr><td style="color:var(--muted);font-size:11px">RUL range</td><td style="font-size:11px"><strong>20–90 cycles</strong></td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Failure time</td><td style="font-size:11px">Fast / abrupt</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Key sensors</td><td style="font-size:11px">torque, motor current, speed</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Dominant failure</td><td style="font-size:11px">Overload, power failure</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Nigerian exposure</td><td style="font-size:11px">Telemetry dropout, sabotage</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Source units</td><td style="font-size:11px">1,050 (clean)</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Target units</td><td style="font-size:11px">700 (augmented)</td></tr>
+      </table>
+    </div>
+    <div class="panel" style="border-top:3px solid var(--purple)">
+      <div class="panel-title">3W — Offshore Well</div>
+      <div class="kpi-val purple" style="font-size:18px;margin-bottom:8px">Subsea / Niger Delta</div>
+      <table>
+        <tr><td style="color:var(--muted);font-size:11px">RUL range</td><td style="font-size:11px"><strong>25–110 cycles</strong></td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Failure time</td><td style="font-size:11px">Variable / sudden</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Key sensors</td><td style="font-size:11px">downhole pressure, choke</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Dominant failure</td><td style="font-size:11px">Slugging, sabotage, hydrates</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Nigerian exposure</td><td style="font-size:11px">Wave loading, sabotage spikes</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Source units</td><td style="font-size:11px">540 (clean)</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Target units</td><td style="font-size:11px">360 (augmented)</td></tr>
+      </table>
+    </div>
+    <div class="panel" style="border-top:3px solid var(--red)">
+      <div class="panel-title">ESPset — Submersible Pump</div>
+      <div class="kpi-val red" style="font-size:18px;margin-bottom:8px">Downhole / ESP</div>
+      <table>
+        <tr><td style="color:var(--muted);font-size:11px">RUL range</td><td style="font-size:11px"><strong>30–120 cycles</strong></td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Failure time</td><td style="font-size:11px">Moderate / accelerating</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Key sensors</td><td style="font-size:11px">vibration, current, frequency</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Dominant failure</td><td style="font-size:11px">Cavitation, bearing wear</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Nigerian exposure</td><td style="font-size:11px">Corrosion, wave loading</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Source units</td><td style="font-size:11px">1,170 (clean)</td></tr>
+        <tr><td style="color:var(--muted);font-size:11px">Target units</td><td style="font-size:11px">780 (augmented)</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <!-- Active channels matrix -->
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="panel">
+      <div class="panel-title">Active Sensor Channels per Asset Class (Chapter 3, Table 3.2)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Channel</th>
+            <th style="text-align:center;color:var(--accent)">CMAPSS</th>
+            <th style="text-align:center;color:var(--green)">AI4I</th>
+            <th style="text-align:center;color:var(--purple)">3W</th>
+            <th style="text-align:center;color:var(--red)">ESPset</th>
+          </tr>
+        </thead>
+        <tbody id="channel-matrix-body">
+          <tr><td>pressure_1</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>pressure_2</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>vibration_x</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>vibration_y</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>temperature_1</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>temperature_2</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td></tr>
+          <tr><td>motor_current</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>frequency</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>torque</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>rotational_speed</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td></tr>
+          <tr style="border-top:2px solid var(--border)">
+            <td><strong>Active channels</strong></td>
+            <td style="text-align:center"><strong>7</strong></td>
+            <td style="text-align:center"><strong>6</strong></td>
+            <td style="text-align:center"><strong>5</strong></td>
+            <td style="text-align:center"><strong>8</strong></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Nigerian perturbations matrix -->
+    <div class="panel">
+      <div class="panel-title">Nigerian Perturbations per Asset Class (Chapter 3, Table 3.8)</div>
+      <table>
+        <thead>
+          <tr>
+            <th>Perturbation</th>
+            <th style="text-align:center;color:var(--accent)">CMAPSS</th>
+            <th style="text-align:center;color:var(--green)">AI4I</th>
+            <th style="text-align:center;color:var(--purple)">3W</th>
+            <th style="text-align:center;color:var(--red)">ESPset</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td>Humidity drift (pressure)</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>Telemetry dropout</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>Sabotage impulses</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td></tr>
+          <tr><td>Corrosion trend</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>Sampling mismatch</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr><td>Wave loading</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center;color:var(--muted)">&#8212;</td>
+            <td style="text-align:center">&#10003;</td>
+            <td style="text-align:center">&#10003;</td></tr>
+          <tr style="border-top:2px solid var(--border)">
+            <td><strong>Total perturbations</strong></td>
+            <td style="text-align:center"><strong>3</strong></td>
+            <td style="text-align:center"><strong>3</strong></td>
+            <td style="text-align:center"><strong>5</strong></td>
+            <td style="text-align:center"><strong>5</strong></td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:11px;color:var(--muted);margin-top:10px">
+        3W and ESPset face the most perturbations — consistent with their higher RUL RMSE
+        (12.63 and 11.67 vs 6.30 for AI4I). Offshore assets are hardest to predict.
+      </div>
+    </div>
+  </div>
+
+  <!-- Three layers of heterogeneity + NADiSSP response -->
+  <div class="grid g2" style="margin-bottom:14px">
+    <div class="panel">
+      <div class="panel-title">Three Layers of Heterogeneity (Chapter 1.2)</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        <div style="padding:10px;background:rgba(77,171,247,.08);border-left:3px solid var(--accent);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px">1. Asset Heterogeneity</div>
+          <div style="font-size:11px;color:var(--muted)">Four equipment classes with different physics, sensor profiles,
+          failure modes, and degradation timescales (20–130 cycles). A model trained on turbines
+          cannot transfer to ESP pumps — pressure-drop patterns do not generalise to vibration-current patterns.</div>
+        </div>
+        <div style="padding:10px;background:rgba(81,207,102,.08);border-left:3px solid var(--green);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:4px">2. Temporal Heterogeneity</div>
+          <div style="font-size:11px;color:var(--muted)">Legacy 1970s equipment reports data intermittently (sampling mismatch)
+          while modern IoT-instrumented offshore platforms stream at 1Hz. Same physical degradation
+          produces completely different data shapes depending on installation era.</div>
+        </div>
+        <div style="padding:10px;background:rgba(255,107,107,.08);border-left:3px solid var(--red);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:4px">3. Environmental Heterogeneity</div>
+          <div style="font-size:11px;color:var(--muted)">Nigerian operating conditions impose 6 perturbations absent from
+          global benchmarks: humidity drift, telemetry dropout (power outages), sabotage impulses
+          (pipeline vandalism), corrosion baseline shifts, sampling mismatches, and wave loading.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="panel-title">NADiSSP Response to Each Layer</div>
+      <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
+        <div style="padding:10px;background:rgba(77,171,247,.08);border-left:3px solid var(--accent);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px">GRL Adversarial Alignment</div>
+          <div style="font-size:11px;color:var(--muted)">Gradient reversal forces the encoder to learn features
+          that are domain-invariant across all four asset classes. Domain discriminator accuracy
+          reduced to 41.6% (near-chance) — proving the representations generalise.</div>
+        </div>
+        <div style="padding:10px;background:rgba(81,207,102,.08);border-left:3px solid var(--green);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--green);margin-bottom:4px">SimCLR Contrastive Augmentation</div>
+          <div style="font-size:11px;color:var(--muted)">Physics-informed augmentation (all 6 perturbations) during
+          contrastive pre-training teaches the model to recognise the same degradation signal
+          regardless of sampling rate, dropout, or corrosion noise.</div>
+        </div>
+        <div style="padding:10px;background:rgba(255,107,107,.08);border-left:3px solid var(--red);border-radius:4px">
+          <div style="font-size:12px;font-weight:600;color:var(--red);margin-bottom:4px">Weibull PH Head</div>
+          <div style="font-size:11px;color:var(--muted)">Asset-class-specific shape parameter &#946;&gt;1 models
+          the wear-out regime. Different assets have different failure timescales —
+          the Weibull head learns this per-class rather than assuming one fixed curve.</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Proof: single model, all four assets -->
+  <div class="panel">
+    <div class="panel-title">Proof of Heterogeneous Generalisation — Single Model, All Four Asset Classes (Table 4.6)</div>
+    <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
+      The key claim: one NADiSSP model trained jointly achieves AUPRC &#8805; 0.85 on all four asset classes
+      simultaneously — without retraining per asset. This is the definition of heterogeneous generalisation.
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>Asset Class</th>
+          <th>Equipment Type</th>
+          <th>RUL Range</th>
+          <th>Active Channels</th>
+          <th>AUPRC</th>
+          <th>RUL RMSE</th>
+          <th>Target Met</th>
+        </tr>
+      </thead>
+      <tbody id="hetero-proof-body">
+        <tr><td>CMAPSS (Gas Turbine)</td><td>Turbofan compressor</td><td>40–130 cycles</td><td>7 / 10</td>
+          <td class="accent"><strong>0.9604</strong></td><td>12.60</td>
+          <td><span class="badge badge-green">&#10003; Exceeds 0.85</span></td></tr>
+        <tr><td>AI4I (Process Equipment)</td><td>Petrochemical motor</td><td>20–90 cycles</td><td>6 / 10</td>
+          <td class="green"><strong>0.9938</strong></td><td>6.30</td>
+          <td><span class="badge badge-green">&#10003; Exceeds 0.85</span></td></tr>
+        <tr><td>3W (Offshore Well)</td><td>Niger Delta subsea</td><td>25–110 cycles</td><td>5 / 10</td>
+          <td class="purple"><strong>0.9597</strong></td><td>12.63</td>
+          <td><span class="badge badge-green">&#10003; Exceeds 0.85</span></td></tr>
+        <tr><td>ESPset (ESP Pump)</td><td>Downhole submersible</td><td>30–120 cycles</td><td>8 / 10</td>
+          <td class="red"><strong>0.9647</strong></td><td>11.67</td>
+          <td><span class="badge badge-green">&#10003; Exceeds 0.85</span></td></tr>
+        <tr style="border-top:2px solid var(--border)">
+          <td colspan="4"><strong>Macro-average (single model)</strong></td>
+          <td><strong class="green">0.9747</strong></td><td><strong>10.83</strong></td>
+          <td><span class="badge badge-green">&#10003; All four met</span></td></tr>
+      </tbody>
+    </table>
+    <div style="font-size:11px;color:var(--muted);margin-top:10px">
+      AI4I achieves the highest AUPRC (0.9938) because its failure modes are fast and clean —
+      easier to detect. 3W has the highest RMSE (12.63) because sabotage and wave loading create
+      unpredictable failure onset. Both outcomes are consistent with the heterogeneity analysis above.
+    </div>
   </div>
 </div>
 
@@ -1259,21 +1560,27 @@ function renderResult(res, targetId) {
   }
   const riskCls = {critical:'badge-red', elevated:'badge-yellow', watch:'badge-blue', normal:'badge-green'};
   const riskIcon = {critical:'🔴', elevated:'🟡', watch:'🔵', normal:'🟢'};
-  div.innerHTML = `
-    <div class="panel-title">Prediction · ${res.latency_ms}ms</div>
-    <table>
-      <tr><td>Asset ID</td><td><strong>${res.asset_id}</strong></td></tr>
-      <tr><td>RUL Estimate</td><td><strong class="accent">${res.rul_estimate} ${res.rul_unit}</strong></td></tr>
-      <tr><td>Failure Probability</td><td><strong>${(res.failure_probability*100).toFixed(1)}%</strong>
-        <div class="bar-wrap" style="margin-top:4px;width:120px;display:inline-block;vertical-align:middle;margin-left:8px">
-          <div class="bar-fill" style="width:${(res.failure_probability*100).toFixed(0)}%;background:${
-            res.failure_probability>=0.7?'var(--red)':res.failure_probability>=0.4?'var(--yellow)':'var(--green)'}"></div>
-        </div></td></tr>
-      <tr><td>Risk Level</td><td>${riskIcon[res.risk_level]||''} <span class="badge ${riskCls[res.risk_level]||'badge-grey'}">${res.risk_level}</span></td></tr>
-      <tr><td>Weibull Scale λ</td><td>${res.weibull_scale}</td></tr>
-      <tr><td>Weibull Shape k</td><td>${res.weibull_shape} <span style="font-size:10px;color:var(--muted)">(β>1 → wear-out regime)</span></td></tr>
-      <tr><td>Inference Latency</td><td>${res.latency_ms} ms <span class="badge ${res.latency_ms<120?'badge-green':'badge-red'}">${res.latency_ms<120?'✓ <120ms':'✗ >120ms'}</span></td></tr>
-    </table>`;
+  var fp = (res.failure_probability * 100).toFixed(1);
+  var fpBar = (res.failure_probability * 100).toFixed(0);
+  var fpCol = res.failure_probability >= 0.7 ? 'var(--red)' : res.failure_probability >= 0.4 ? 'var(--yellow)' : 'var(--green)';
+  var latOk = res.latency_ms < 120;
+  div.innerHTML =
+    '<div class="panel-title">Prediction &middot; ' + res.latency_ms + 'ms</div>' +
+    '<table>' +
+    '<tr><td>Asset ID</td><td><strong>' + res.asset_id + '</strong></td></tr>' +
+    '<tr><td>RUL Estimate</td><td><strong class="accent">' + res.rul_estimate + ' ' + res.rul_unit + '</strong></td></tr>' +
+    '<tr><td>Failure Probability</td><td><strong>' + fp + '%</strong>' +
+      '<div class="bar-wrap" style="margin-top:4px;width:120px;display:inline-block;vertical-align:middle;margin-left:8px">' +
+      '<div class="bar-fill" style="width:' + fpBar + '%;background:' + fpCol + '"></div></div></td></tr>' +
+    '<tr><td>Risk Level</td><td>' + (riskIcon[res.risk_level] || '') +
+      ' <span class="badge ' + (riskCls[res.risk_level] || 'badge-grey') + '">' + res.risk_level + '</span></td></tr>' +
+    '<tr><td>Weibull Scale &lambda;</td><td>' + res.weibull_scale + '</td></tr>' +
+    '<tr><td>Weibull Shape k</td><td>' + res.weibull_shape +
+      ' <span style="font-size:10px;color:var(--muted)">(&#946;&gt;1 &rarr; wear-out regime)</span></td></tr>' +
+    '<tr><td>Inference Latency</td><td>' + res.latency_ms + ' ms ' +
+      '<span class="badge ' + (latOk ? 'badge-green' : 'badge-red') + '">' +
+      (latOk ? '&#10003; &lt;120ms' : '&#10007; &gt;120ms') + '</span></td></tr>' +
+    '</table>';
   latHistory.push(res.latency_ms);
   if (latHistory.length > 50) latHistory.shift();
   drawLineChart('canvas-lat', latHistory.map((_,i)=>String(i+1)),
@@ -1325,10 +1632,10 @@ function previewCSV(input) {
     const missing = CHANNELS_ORDER.filter(c => !header.includes(c));
     const preview = document.getElementById('csv-preview');
     if (missing.length) {
-      preview.innerHTML = `<span style="color:var(--red)">⚠ Missing columns: ${missing.join(', ')}</span>`;
+      preview.innerHTML = '<span style="color:var(--red)">&#9888; Missing columns: ' + missing.join(', ') + '</span>';
       document.getElementById('csv-btn').disabled = true;
     } else {
-      preview.innerHTML = `✓ ${rows.length} rows loaded · using last ${_csvSequence.length} timesteps`;
+      preview.innerHTML = '&#10003; ' + rows.length + ' rows loaded &middot; using last ' + _csvSequence.length + ' timesteps';
       preview.style.color = 'var(--green)';
       document.getElementById('csv-btn').disabled = false;
     }
