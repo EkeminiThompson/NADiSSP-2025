@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NADiSSP — Research Dashboard</title>
+<title>NADiP — Research Dashboard</title>
 <style>
 :root {
   --bg:#0f1419; --panel:#1a2230; --border:#2a3548; --text:#e6edf3;
@@ -112,7 +112,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
 <!-- SIDEBAR -->
 <nav>
   <div style="display:flex;align-items:center;justify-content:space-between;padding:0 16px 16px;border-bottom:1px solid var(--border)">
-    <span style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase">NADiSSP</span>
+    <span style="font-size:13px;font-weight:700;color:var(--accent);letter-spacing:.08em;text-transform:uppercase">NADiP</span>
     <button id="theme-toggle" onclick="toggleTheme()" title="Toggle light/dark mode"
       style="background:transparent;border:1px solid var(--border);border-radius:6px;
              color:var(--muted);cursor:pointer;padding:4px 8px;font-size:14px;line-height:1">🌙</button>
@@ -141,8 +141,8 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
 
 <!-- OVERVIEW -->
 <div class="page active" id="page-overview">
-  <div class="page-title">NADiSSP Research Dashboard</div>
-  <div class="page-sub">Nigerian-Adapted Domain-Invariant Self-Supervised Prognostics · Chapter 4 Results</div>
+  <div class="page-title">NADiP Research Dashboard</div>
+  <div class="page-sub">Nigerian-Adapted Domain-Invariant Prognostics · Chapter 4 Results</div>
   <div class="grid g4" id="kpi-row" style="margin-bottom:14px">
     <div class="panel kpi"><div class="kpi-val green" id="kpi-auprc">—</div><div class="kpi-label">AUPRC (test set)</div><div class="kpi-sub">Target: 0.85</div></div>
     <div class="panel kpi"><div class="kpi-val accent" id="kpi-rmse">—</div><div class="kpi-label">RUL RMSE (cycles)</div><div class="kpi-sub">Target: ≤13.5</div></div>
@@ -173,7 +173,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
 <!-- MODEL STATUS -->
 <div class="page" id="page-model">
   <div class="page-title">Model Architecture & Training</div>
-  <div class="page-sub">NADiSSP composite loss · L_total = L_task + λ_d·L_domain + λ_c·L_contrastive + L_survival</div>
+  <div class="page-sub">NADiP composite loss · L_total = L_task + λ_d·L_domain + λ_c·L_contrastive + L_survival</div>
   <div class="grid g2">
     <div class="panel">
       <div class="panel-title">Architecture Summary</div>
@@ -210,7 +210,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
 
 <!-- SIMCLR PRE-TRAINING — CONTRIBUTION 2 -->
 <div class="page" id="page-simclr">
-  <div class="page-title">SimCLR Self-Supervised Pre-Training — Contribution 2</div>
+  <div class="page-title">SimCLR Pre-Training — Contribution 2</div>
   <div class="page-sub">Stage 2 · NT-Xent contrastive loss on unlabelled Nigerian-augmented sequences · τ=0.5 · Section 3.10.2 Component 3</div>
   <div class="alert alert-info">
     <strong>What this solves:</strong> "acute annotation scarcity in which over 80% of sensor data remains unlabelled."
@@ -260,7 +260,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
   <div class="alert alert-info" style="margin-bottom:14px">
     <strong>Definition:</strong> Heterogeneity means the four asset classes differ in physics, sensor profiles,
     failure modes, degradation timescales, and Nigerian environmental exposure — so a model trained on one
-    cannot transfer to another without domain adaptation. NADiSSP is validated across all four simultaneously.
+    cannot transfer to another without domain adaptation. NADiP is validated across all four simultaneously.
   </div>
 
   <!-- Four asset class cards -->
@@ -482,7 +482,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
     </div>
 
     <div class="panel">
-      <div class="panel-title">NADiSSP Response to Each Layer</div>
+      <div class="panel-title">NADiP Response to Each Layer</div>
       <div style="display:flex;flex-direction:column;gap:10px;margin-top:4px">
         <div style="padding:10px;background:rgba(77,171,247,.08);border-left:3px solid var(--accent);border-radius:4px">
           <div style="font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px">GRL Adversarial Alignment</div>
@@ -510,7 +510,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
   <div class="panel">
     <div class="panel-title">Proof of Heterogeneous Generalisation — Single Model, All Four Asset Classes (Table 4.6)</div>
     <div style="font-size:11px;color:var(--muted);margin-bottom:10px">
-      The key claim: one NADiSSP model trained jointly achieves AUPRC &#8805; 0.85 on all four asset classes
+      The key claim: one NADiP model trained jointly achieves AUPRC &#8805; 0.85 on all four asset classes
       simultaneously — without retraining per asset. This is the definition of heterogeneous generalisation.
     </div>
     <table>
@@ -654,7 +654,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
       <table id="tco-core-table">
         <tbody>
           <tr><td>Reactive annual TCO (mean ± SD)</td><td id="tco-react">—</td></tr>
-          <tr><td>NADiSSP annual TCO (mean ± SD)</td><td id="tco-nad">—</td></tr>
+          <tr><td>NADiP annual TCO (mean ± SD)</td><td id="tco-nad">—</td></tr>
           <tr><td>Annual saving</td><td id="tco-delta">—</td></tr>
           <tr><td>5-yr NPV (mean ± SD)</td><td id="tco-npv2">—</td></tr>
           <tr><td>±35% uncertainty band</td><td id="tco-ci">—</td></tr>
@@ -901,7 +901,7 @@ pre{background:var(--input-bg);border:1px solid var(--border);border-radius:6px;
           <button class="btn btn-sec" onclick="runScript('generate')">▶ Run</button>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between">
-          <div><div style="font-size:13px;font-weight:600">2. Train NADiSSP</div><div style="font-size:11px;color:var(--muted)">scripts/train.py · 43 epochs</div></div>
+          <div><div style="font-size:13px;font-weight:600">2. Train NADiP</div><div style="font-size:11px;color:var(--muted)">scripts/train.py · 43 epochs</div></div>
           <button class="btn btn-sec" onclick="runScript('train')">▶ Run</button>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between">
