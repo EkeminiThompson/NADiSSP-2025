@@ -2,7 +2,7 @@
 # Backend: sklearn (CPU, no PyTorch required for edge deployment)
 numpy>=1.24
 pandas>=1.5
-scikit-learn>=1.3
+scikit-learn==1.8.0
 scipy>=1.10
 matplotlib>=3.7
 seaborn>=0.12

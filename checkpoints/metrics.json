@@ -38,42 +38,7 @@
     "post_adaptation_w1": 0.3525,
     "mmd_reduction_pct": 62.5
   },
-  "training_time_sec": 54.5,
+  "training_time_sec": 144.1,
   "n_epochs": 43,
-  "backend": "sklearn-GBT",
-  "domain_shift_per_asset": {
-    "cmaps_turbofan": {
-      "pre_mmd": 0.0,
-      "pre_w1": 1.2463,
-      "post_mmd": 0.0,
-      "post_w1": 1.2511,
-      "mmd_reduction_pct": 3.8
-    },
-    "ai4i_manufacturing": {
-      "pre_mmd": 0.0003,
-      "pre_w1": 1.9012,
-      "post_mmd": 0.0003,
-      "post_w1": 1.9077,
-      "mmd_reduction_pct": -1.1
-    },
-    "3w_offshore_well": {
-      "pre_mmd": 0.0004,
-      "pre_w1": 1.2517,
-      "post_mmd": 0.0003,
-      "post_w1": 1.2593,
-      "mmd_reduction_pct": 2.6
-    },
-    "espset_pump": {
-      "pre_mmd": 0.0,
-      "pre_w1": 3.0296,
-      "post_mmd": 0.0,
-      "post_w1": 3.0325,
-      "mmd_reduction_pct": 1.8
-    },
-    "composite": {
-      "pre_mmd": 0.0002,
-      "post_mmd": 0.0001,
-      "mmd_reduction_pct": 14.3
-    }
-  }
+  "backend": "sklearn-GBT"
 }
